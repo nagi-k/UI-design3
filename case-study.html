@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PathFinder 留学申请助手 · UI/UX 案例研究</title>
+<style>
+/* ============================================================
+   本案例页直接使用 PathFinder Design Token 构建 —— 页面即证据
+   ============================================================ */
+:root{
+  --brand-50:#EFF6FF;--brand-100:#DBEAFE;--brand-200:#BFDBFE;
+  --brand-500:#3B82F6;--brand-600:#2563EB;--brand-700:#1D4ED8;
+  --success-50:#F0FDF4;--success-500:#22C55E;
+  --warning-50:#FFFBEB;--warning-500:#F59E0B;
+  --error-50:#FEF2F2;--error-500:#EF4444;
+  --info-50:#ECFEFF;--info-500:#06B6D4;
+  --gray-0:#FFFFFF;--gray-50:#F8FAFC;--gray-100:#F1F5F9;--gray-200:#E2E8F0;
+  --gray-300:#CBD5E1;--gray-400:#94A3B8;--gray-500:#64748B;--gray-600:#475569;
+  --gray-700:#334155;--gray-800:#1E293B;--gray-900:#0F172A;
+  --text-primary:var(--gray-900);--text-secondary:var(--gray-600);
+  --text-tertiary:var(--gray-500);--text-disabled:var(--gray-400);
+  --space-4:4px;--space-8:8px;--space-12:12px;--space-16:16px;
+  --space-20:20px;--space-24:24px;--space-32:32px;--space-48:48px;
+  --radius-4:4px;--radius-8:8px;--radius-12:12px;--radius-16:16px;--radius-full:999px;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.05);
+  --shadow-md:0 4px 6px -1px rgba(15,23,42,.08),0 2px 4px -1px rgba(15,23,42,.04);
+  --shadow-lg:0 10px 15px -3px rgba(15,23,42,.08),0 4px 6px -2px rgba(15,23,42,.04);
+  --font-sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",-apple-system,sans-serif;
+  --text-h1:700 24px/32px var(--font-sans);
+  --text-h2:600 20px/28px var(--font-sans);
+  --text-h3:600 17px/24px var(--font-sans);
+  --text-body:400 15px/22px var(--font-sans);
+  --text-body-medium:500 15px/22px var(--font-sans);
+  --text-caption:400 13px/18px var(--font-sans);
+  --text-caption-medium:500 13px/18px var(--font-sans);
+  --text-tiny:500 11px/14px var(--font-sans);
+  --ease-out:cubic-bezier(.16,1,.3,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font:var(--text-body);color:var(--text-primary);background:var(--gray-0);-webkit-font-smoothing:antialiased}
+a{color:var(--brand-600);text-decoration:none}
+img{max-width:100%}
+button{font-family:inherit;border:none;background:none;cursor:pointer;color:inherit}
+::selection{background:var(--brand-100)}
+
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+/* ============ 导航 ============ */
+.nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--gray-200)}
+.nav-in{max-width:1080px;margin:0 auto;padding:0 24px;height:56px;display:flex;align-items:center;gap:24px}
+.logo{display:flex;align-items:center;gap:10px;font:var(--text-h3)}
+.logo .mark{width:28px;height:28px;border-radius:8px;background:var(--brand-600);color:#fff;display:flex;align-items:center;justify-content:center}
+.nav-links{display:flex;gap:4px;margin-left:auto;font:var(--text-caption-medium)}
+.nav-links a{color:var(--text-secondary);padding:6px 10px;border-radius:var(--radius-4)}
+.nav-links a:hover{color:var(--brand-600);background:var(--brand-50)}
+.nav-cta{margin-left:8px}
+@media(max-width:860px){
+  .nav-in{gap:12px}
+  .nav-links{margin-left:0;overflow-x:auto;scrollbar-width:none;flex:1;white-space:nowrap}
+  .nav-links::-webkit-scrollbar{display:none}
+  .nav-cta{margin-left:auto;flex-shrink:0}
+}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:var(--radius-8);font:var(--text-body-medium);transition:background .15s,transform .08s var(--ease-out)}
+.btn:active{transform:scale(.96)}
+.btn-primary{height:44px;padding:0 16px;background:var(--brand-600);color:#fff}
+.btn-primary:hover{background:var(--brand-700)}
+.btn-secondary{height:44px;padding:0 16px;background:var(--gray-0);color:var(--brand-600);border:1px solid var(--brand-200)}
+.btn-secondary:hover{background:var(--brand-50)}
+.btn-sm{height:36px;font:var(--text-caption-medium)}
+
+.tag{display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:var(--radius-4);font:var(--text-tiny)}
+.tag-brand{background:var(--brand-50);color:var(--brand-700)}
+.tag-success{background:var(--success-50);color:#16A34A}
+.tag-warning{background:var(--warning-50);color:#D97706}
+.tag-error{background:var(--error-50);color:#DC2626}
+.tag-info{background:var(--info-50);color:#0891B2}
+.tag-gray{background:var(--gray-100);color:var(--gray-700)}
+
+/* ============ Hero ============ */
+.hero{background:var(--gray-50);border-bottom:1px solid var(--gray-200);padding:64px 0 72px}
+.hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
+@media(max-width:900px){.hero-grid{grid-template-columns:1fr}}
+.kicker{font:var(--text-tiny);letter-spacing:.14em;text-transform:uppercase;color:var(--brand-600);margin-bottom:16px}
+.hero h1{font:700 40px/50px var(--font-sans);letter-spacing:-.01em;margin-bottom:16px}
+.hero .lead{font:400 17px/28px var(--font-sans);color:var(--text-secondary);max-width:520px;margin-bottom:32px}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:40px}
+.meta-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;max-width:520px}
+.meta-grid .m{border-top:2px solid var(--gray-200);padding-top:12px}
+.meta-grid .m b{display:block;font:var(--text-caption-medium);color:var(--text-tertiary);margin-bottom:4px}
+.meta-grid .m span{font:var(--text-body-medium)}
+.hero-phone{display:flex;justify-content:center}
+.hero-phone iframe{width:402px;height:700px;border:none;border-radius:32px;box-shadow:var(--shadow-lg);background:var(--gray-50)}
+@media(max-width:480px){.hero-phone iframe{transform:scale(.82);transform-origin:top center;height:580px}}
+.hero-hint{text-align:center;font:var(--text-caption);color:var(--text-tertiary);margin-top:12px}
+
+/* ============ 章节骨架 ============ */
+.section{padding:72px 0;border-bottom:1px solid var(--gray-100)}
+.sec-head{max-width:680px;margin-bottom:40px}
+.sec-num{font:700 13px/18px var(--font-sans);color:var(--brand-600);letter-spacing:.08em;margin-bottom:8px}
+.sec-head h2{font:700 28px/38px var(--font-sans);letter-spacing:-.01em;margin-bottom:12px}
+.sec-head p{color:var(--text-secondary)}
+.sub-h{font:var(--text-h2);margin:40px 0 16px}
+.sub-h:first-of-type{margin-top:0}
+.body-text{color:var(--text-secondary);max-width:680px}
+.body-text+p.body-text{margin-top:12px}
+
+/* ============ 卡片与网格 ============ */
+.card{background:var(--gray-0);border:1px solid var(--gray-200);border-radius:var(--radius-12);padding:var(--space-20);box-shadow:var(--shadow-sm)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:860px){.grid-3{grid-template-columns:1fr}.grid-2{grid-template-columns:1fr}}
+.icon-box{width:40px;height:40px;border-radius:var(--radius-12);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.card h4{font:var(--text-h3);margin-bottom:6px}
+.card p{font:var(--text-caption);color:var(--text-secondary)}
+
+/* ============ 目标指标 ============ */
+.goal-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
+@media(max-width:860px){.goal-row{grid-template-columns:1fr}}
+.goal{background:var(--gray-50);border-radius:var(--radius-12);padding:20px;border:1px solid var(--gray-200)}
+.goal b{display:block;font:700 24px/30px var(--font-sans);color:var(--brand-600);margin-bottom:4px}
+.goal span{font:var(--text-caption);color:var(--text-secondary)}
+
+/* ============ 时间轴（角色） ============ */
+.timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:24px;border:1px solid var(--gray-200);border-radius:var(--radius-12);overflow:hidden}
+.tl-cell{padding:20px;border-right:1px solid var(--gray-200);background:var(--gray-0)}
+.tl-cell:last-child{border-right:none}
+.tl-cell .wk{font:var(--text-tiny);color:var(--brand-600);letter-spacing:.06em;margin-bottom:8px}
+.tl-cell b{display:block;font:var(--text-body-medium);margin-bottom:4px}
+.tl-cell span{font:var(--text-caption);color:var(--text-secondary)}
+@media(max-width:860px){.timeline{grid-template-columns:1fr 1fr}.tl-cell:nth-child(2){border-right:none}.tl-cell:nth-child(-n+2){border-bottom:1px solid var(--gray-200)}}
+
+/* ============ 图表卡片 ============ */
+.figure{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius-16);padding:32px;margin-top:16px;overflow-x:auto}
+.figure figcaption{font:var(--text-caption);color:var(--text-tertiary);margin-top:16px;text-align:center}
+
+/* ============ 决策卡片 ============ */
+.decision{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--gray-200);border-radius:var(--radius-12);overflow:hidden;margin-top:16px}
+.decision .opt{padding:20px}
+.decision .opt.a{background:var(--gray-50);border-right:1px solid var(--gray-200)}
+.decision .opt .lbl{font:var(--text-tiny);letter-spacing:.06em;margin-bottom:8px}
+.decision .opt.a .lbl{color:var(--text-tertiary)}
+.decision .opt.b .lbl{color:var(--brand-600)}
+.decision .opt b{display:block;font:var(--text-body-medium);margin-bottom:6px}
+.decision .opt p{font:var(--text-caption);color:var(--text-secondary)}
+@media(max-width:700px){.decision{grid-template-columns:1fr}.decision .opt.a{border-right:none;border-bottom:1px solid var(--gray-200)}}
+
+/* ============ 原型嵌入 ============ */
+.proto-stage{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius-16);padding:40px;display:flex;flex-direction:column;align-items:center;gap:16px}
+.proto-stage iframe{width:402px;height:760px;border:none;border-radius:40px;box-shadow:var(--shadow-lg)}
+@media(max-width:480px){.proto-stage iframe{transform:scale(.8);transform-origin:top center;height:620px}.proto-stage{padding:24px 8px}}
+.page-chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.page-chips button{height:32px;padding:0 14px;border-radius:var(--radius-full);font:var(--text-caption-medium);background:var(--gray-0);border:1px solid var(--gray-200);color:var(--gray-700);transition:all .15s}
+.page-chips button:hover{border-color:var(--brand-500);color:var(--brand-600)}
+.page-chips button.active{background:var(--brand-600);border-color:var(--brand-600);color:#fff}
+
+/* ============ 组件演示 ============ */
+.demo{background:var(--gray-0);border:1px solid var(--gray-200);border-radius:var(--radius-12);padding:24px}
+.demo .demo-lbl{font:var(--text-tiny);color:var(--text-tertiary);letter-spacing:.06em;margin-bottom:16px}
+.demo-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.btn-ghost{height:36px;padding:0 12px;background:var(--gray-100);color:var(--gray-700);border-radius:var(--radius-8)}
+.btn-ghost:hover{background:var(--gray-200)}
+.btn-text{height:36px;padding:0 8px;color:var(--brand-600);border-radius:var(--radius-4)}
+.btn-text:hover{background:var(--brand-50)}
+.btn-disabled{height:44px;padding:0 16px;background:var(--gray-300);color:#fff;border-radius:var(--radius-8);cursor:not-allowed}
+.input-demo{height:48px;width:260px;max-width:100%;border:1px solid var(--gray-200);border-radius:var(--radius-8);padding:0 14px;font:var(--text-body);color:var(--text-primary);background:var(--gray-0);outline:none;transition:border-color .15s,box-shadow .15s}
+.input-demo::placeholder{color:var(--text-tertiary)}
+.input-demo:focus{border-color:var(--brand-500);box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+
+/* ============ 状态演示（空/加载/错误） ============ */
+.state-card{border:1px solid var(--gray-200);border-radius:var(--radius-12);padding:24px;text-align:center;background:var(--gray-0)}
+.state-card .s-lbl{margin-top:16px}
+.illo{width:96px;height:96px;margin:0 auto 16px;border-radius:var(--radius-full);background:var(--gray-100);display:flex;align-items:center;justify-content:center;color:var(--gray-400)}
+.skel{border-radius:var(--radius-12);border:1px solid var(--gray-200);padding:16px;text-align:left}
+.skel .row{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.skel .row:last-child{margin-bottom:0}
+.shimmer{background:linear-gradient(90deg,var(--gray-100) 25%,var(--gray-200) 50%,var(--gray-100) 75%);background-size:200% 100%;animation:shim 1.4s ease-in-out infinite;border-radius:6px}
+@keyframes shim{from{background-position:200% 0}to{background-position:-200% 0}}
+.err-icon{width:48px;height:48px;margin:0 auto 12px;border-radius:var(--radius-full);background:var(--error-50);color:var(--error-500);display:flex;align-items:center;justify-content:center}
+
+/* ============ 设计系统 ============ */
+.swatch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;margin-top:16px}
+.swatch{border-radius:var(--radius-8);overflow:hidden;border:1px solid var(--gray-200)}
+.swatch .c{height:56px}
+.swatch .t{padding:6px 8px;font:400 10px/14px var(--font-sans);color:var(--text-secondary);background:var(--gray-0)}
+.swatch .t b{display:block;color:var(--text-primary);font-weight:500}
+.type-spec{border:1px solid var(--gray-200);border-radius:var(--radius-12);overflow:hidden;margin-top:16px}
+.type-row{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:16px 20px;border-bottom:1px solid var(--gray-100)}
+.type-row:last-child{border-bottom:none}
+.type-row .meta{font:400 12px/16px var(--font-sans);color:var(--text-tertiary);text-align:right;flex-shrink:0}
+.space-demo{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-top:16px}
+.space-demo .sp{display:flex;flex-direction:column;align-items:center;gap:6px;font:400 10px/14px var(--font-sans);color:var(--text-tertiary)}
+.space-demo .sp i{display:block;background:var(--brand-100);border:1px solid var(--brand-200);border-radius:2px;font-style:normal}
+.radius-demo,.shadow-demo{display:flex;gap:16px;flex-wrap:wrap;margin-top:16px}
+.radius-demo .r{width:88px;height:64px;background:var(--brand-50);border:1.5px solid var(--brand-500);display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;font:400 10px/14px var(--font-sans);color:var(--brand-700)}
+.shadow-demo .s{width:120px;height:72px;background:var(--gray-0);border-radius:var(--radius-12);display:flex;align-items:center;justify-content:center;font:400 11px/14px var(--font-sans);color:var(--text-tertiary)}
+
+/* ============ 检查清单 ============ */
+.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;margin-top:16px}
+@media(max-width:700px){.check-grid{grid-template-columns:1fr}}
+.check-item{display:flex;gap:10px;align-items:flex-start;font:var(--text-caption);color:var(--text-secondary)}
+.check-item .ck{width:18px;height:18px;border-radius:6px;background:var(--success-500);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+
+/* ============ 成果 ============ */
+.result-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:860px){.result-grid{grid-template-columns:1fr 1fr}}
+.result{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius-12);padding:20px;text-align:center}
+.result b{display:block;font:700 28px/36px var(--font-sans);color:var(--brand-600)}
+.result span{font:var(--text-caption);color:var(--text-secondary)}
+.quote{border-left:3px solid var(--brand-500);background:var(--brand-50);border-radius:0 var(--radius-12) var(--radius-12) 0;padding:16px 20px;margin-top:16px}
+.quote p{font:var(--text-body);color:var(--gray-700);margin-bottom:6px}
+.quote span{font:var(--text-caption);color:var(--text-tertiary)}
+
+/* ============ 复盘 ============ */
+.retro h4{font:var(--text-h3);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.retro .card p+p{margin-top:8px}
+
+/* ============ Footer ============ */
+.footer{padding:72px 0 48px;text-align:center}
+.footer h2{font:700 28px/38px var(--font-sans);margin-bottom:12px}
+.footer p{color:var(--text-secondary);margin-bottom:24px}
+.footer .fine{margin-top:48px;font:var(--text-caption);color:var(--text-disabled)}
+
+/* 滚动入场 */
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .5s var(--ease-out),transform .5s var(--ease-out)}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<!-- ================= 导航 ================= -->
+<nav class="nav">
+  <div class="nav-in">
+    <a class="logo" href="#top">
+      <span class="mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span>
+      PathFinder
+    </a>
+    <div class="nav-links">
+      <a href="#bg">背景</a><a href="#role">角色</a><a href="#process">过程</a>
+      <a href="#solution">方案</a><a href="#system">设计系统</a><a href="#results">成果</a><a href="#retro">复盘</a>
+    </div>
+    <a class="btn btn-primary btn-sm nav-cta" href="index.html" target="_blank">打开原型</a>
+  </div>
+</nav>
+
+<!-- ================= Hero ================= -->
+<header class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="kicker">UI/UX Case Study · 移动端 App · 2025</div>
+      <h1>PathFinder<br>留学申请助手</h1>
+      <p class="lead">一款帮留学申请者「掌控全局」的管理工具：把选校、文书、进度和截止日期收拢到一个界面里。本案例从 0 到 1 完成了产品设计、Design Token 体系与可交互高保真原型。</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="index.html" target="_blank">体验可交互原型</a>
+        <a class="btn btn-secondary" href="#process">查看设计过程</a>
+      </div>
+      <div class="meta-grid">
+        <div class="m"><b>我的角色</b><span>独立产品设计师（端到端）</span></div>
+        <div class="m"><b>项目周期</b><span>2025.10 — 2025.12</span></div>
+        <div class="m"><b>平台</b><span>iOS（390pt 设计稿）</span></div>
+        <div class="m"><b>交付物</b><span>交互原型 · 设计系统 · 组件规范</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="hero-phone">
+        <iframe src="index.html?embed=1&tab=home" title="PathFinder 可交互原型" loading="lazy"></iframe>
+      </div>
+      <p class="hero-hint">↑ 真实可点击：试试切换底部 Tab、筛选学校、勾选任务</p>
+    </div>
+  </div>
+</header>
+
+<!-- ================= 01 背景与目标 ================= -->
+<section class="section" id="bg">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-num">01 — 背景与目标</div>
+      <h2>申请季的信息，散落在十几个地方</h2>
+      <p>留学申请是一个持续 6–12 个月、涉及数十个任务的漫长项目。但申请者的信息却散落在学校官网、Excel、备忘录、邮件和微信收藏里。</p>
+    </div>
+    <div class="grid-3">
+      <div class="card reveal">
+        <div class="icon-box" style="background:var(--error-50);color:var(--error-500)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <h4>问题：DDL 失控</h4>
+        <p>不同学校、不同轮次的截止日期全靠脑记和表格，一旦遗漏就是整年的代价。</p>
+      </div>
+      <div class="card reveal">
+        <div class="icon-box" style="background:var(--warning-50);color:#D97706"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <h4>问题：文书版本混乱</h4>
+        <p>PS、CV、推荐信各自迭代了 N 版，"最终版_v3_真的最终.docx"是常态。</p>
+      </div>
+      <div class="card reveal">
+        <div class="icon-box" style="background:var(--info-50);color:#0891B2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+        <h4>问题：进度无感</h4>
+        <p>"我到底准备到哪一步了？"缺乏全局视图，焦虑感远大于实际工作量。</p>
+      </div>
+    </div>
+
+    <h3 class="sub-h reveal">目标用户</h3>
+    <p class="body-text reveal">计划 1–2 年内申请海外硕士/本科的学生（18–28 岁），DIY 或半 DIY 申请，同时推进 5–10 所学校。他们是移动互联网原生用户，习惯高效率工具产品，对"信息密度"和"操作路径"敏感。</p>
+
+    <h3 class="sub-h reveal">设计目标</h3>
+    <div class="goal-row">
+      <div class="goal reveal"><b>3 秒</b><span>任意关键信息（DDL / 文书状态 / 总进度）可达</span></div>
+      <div class="goal reveal"><b>1 屏</b><span>首页一屏呈现今日重点，无需翻页找任务</span></div>
+      <div class="goal reveal"><b>0 学习成本</b><span>遵循成熟大厂设计语言，开箱即会用</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 02 我的角色 ================= -->
+<section class="section" id="role">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-num">02 — 我的角色</div>
+      <h2>独立完成端到端设计</h2>
+      <p>从用户研究到设计系统再到可交互原型，全部由我独立负责；用 HTML/CSS/JS 将原型实现为真实可运行的代码，而非静态图片。</p>
+    </div>
+    <div class="timeline reveal">
+      <div class="tl-cell"><div class="wk">WEEK 1–2</div><b>用户研究</b><span>6 次深度访谈 · 竞品走查 · 任务梳理</span></div>
+      <div class="tl-cell"><div class="wk">WEEK 3–4</div><b>信息架构 & 流程</b><span>信息架构图 · 核心任务流 · 线框图</span></div>
+      <div class="tl-cell"><div class="wk">WEEK 5–7</div><b>视觉 & 设计系统</b><span>Design Token · 组件规范 · 5 页高保真</span></div>
+      <div class="tl-cell"><div class="wk">WEEK 8</div><b>原型 & 验证</b><span>代码级交互原型 · 可用性走查 · 迭代</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 03 设计过程 ================= -->
+<section class="section" id="process">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-num">03 — 设计过程</div>
+      <h2>从"混乱"到"秩序"的四步</h2>
+    </div>
+
+    <h3 class="sub-h reveal">3.1 用户研究：三个关键洞察</h3>
+    <p class="body-text reveal">访谈了 6 名正在申请或刚完成申请的学生，并走查了 Notion 模板、Excel 表格和 3 款同类产品。三个反复出现的痛点直接塑造了产品形态：</p>
+    <div class="grid-3" style="margin-top:16px">
+      <div class="card reveal"><h4>① "我怕错过"</h4><p>DDL 焦虑是最高频情绪。设计响应：首页「近期截止」列表 + 颜色分级圆点 + 今日聚焦卡。</p></div>
+      <div class="card reveal"><h4>② "我不想来回切"</h4><p>在学校官网、文档、表格间反复跳转。设计响应：一切收拢进 5 个 Tab，关键操作 ≤ 2 步。</p></div>
+      <div class="card reveal"><h4>③ "我想看到进展"</h4><p>漫长申请季需要正反馈。设计响应：百分比、阶段时间轴、勾选任务的正向动效。</p></div>
+    </div>
+
+    <h3 class="sub-h reveal">3.2 信息架构</h3>
+    <div class="figure reveal">
+      <svg viewBox="0 0 960 260" width="100%" style="min-width:720px" font-family="PingFang SC,Microsoft YaHei,sans-serif">
+        <defs><style>
+          .n-root{fill:#2563EB}.n-main{fill:#EFF6FF;stroke:#BFDBFE}.n-sub{fill:#FFFFFF;stroke:#E2E8F0}
+          .ln{stroke:#CBD5E1;stroke-width:1.5}
+          .t1{fill:#FFFFFF;font-size:15px;font-weight:600}.t2{fill:#0F172A;font-size:14px;font-weight:600}.t3{fill:#64748B;font-size:11.5px}
+        </style></defs>
+        <line class="ln" x1="480" y1="46" x2="110" y2="96"/><line class="ln" x1="480" y1="46" x2="295" y2="96"/>
+        <line class="ln" x1="480" y1="46" x2="480" y2="96"/><line class="ln" x1="480" y1="46" x2="665" y2="96"/><line class="ln" x1="480" y1="46" x2="850" y2="96"/>
+        <rect class="n-root" x="410" y="14" width="140" height="36" rx="8"/><text class="t1" x="480" y="37" text-anchor="middle">PathFinder</text>
+        <g><rect class="n-main" x="40" y="96" width="140" height="40" rx="8"/><text class="t2" x="110" y="120" text-anchor="middle">首页</text>
+          <line class="ln" x1="110" y1="136" x2="110" y2="156"/>
+          <rect class="n-sub" x="20" y="156" width="180" height="26" rx="6"/><text class="t3" x="110" y="173" text-anchor="middle">今日聚焦 / 快捷入口</text>
+          <rect class="n-sub" x="20" y="188" width="180" height="26" rx="6"/><text class="t3" x="110" y="205" text-anchor="middle">申请进度 / 近期截止</text></g>
+        <g><rect class="n-main" x="225" y="96" width="140" height="40" rx="8"/><text class="t2" x="295" y="120" text-anchor="middle">选校</text>
+          <line class="ln" x1="295" y1="136" x2="295" y2="156"/>
+          <rect class="n-sub" x="205" y="156" width="180" height="26" rx="6"/><text class="t3" x="295" y="173" text-anchor="middle">搜索 / 冲刺匹配保底</text>
+          <rect class="n-sub" x="205" y="188" width="180" height="26" rx="6"/><text class="t3" x="295" y="205" text-anchor="middle">学校卡片 / 录取概率</text></g>
+        <g><rect class="n-main" x="410" y="96" width="140" height="40" rx="8"/><text class="t2" x="480" y="120" text-anchor="middle">文书</text>
+          <line class="ln" x1="480" y1="136" x2="480" y2="156"/>
+          <rect class="n-sub" x="390" y="156" width="180" height="26" rx="6"/><text class="t3" x="480" y="173" text-anchor="middle">PS / CV / RL / 作品集</text>
+          <rect class="n-sub" x="390" y="188" width="180" height="26" rx="6"/><text class="t3" x="480" y="205" text-anchor="middle">状态筛选 / 版本管理</text></g>
+        <g><rect class="n-main" x="595" y="96" width="140" height="40" rx="8"/><text class="t2" x="665" y="120" text-anchor="middle">进度</text>
+          <line class="ln" x1="665" y1="136" x2="665" y2="156"/>
+          <rect class="n-sub" x="575" y="156" width="180" height="26" rx="6"/><text class="t3" x="665" y="173" text-anchor="middle">总览环形图 / 数据</text>
+          <rect class="n-sub" x="575" y="188" width="180" height="26" rx="6"/><text class="t3" x="665" y="205" text-anchor="middle">6 阶段时间轴 / 子任务</text></g>
+        <g><rect class="n-main" x="780" y="96" width="140" height="40" rx="8"/><text class="t2" x="850" y="120" text-anchor="middle">我的</text>
+          <line class="ln" x1="850" y1="136" x2="850" y2="156"/>
+          <rect class="n-sub" x="760" y="156" width="180" height="26" rx="6"/><text class="t3" x="850" y="173" text-anchor="middle">资料 / 申请概览</text>
+          <rect class="n-sub" x="760" y="188" width="180" height="26" rx="6"/><text class="t3" x="850" y="205" text-anchor="middle">工具服务 / 设置</text></g>
+      </svg>
+      <figcaption>信息架构：5 个一级 Tab，每个 Tab 只承载 2 类核心内容，控制认知负荷</figcaption>
+    </div>
+
+    <h3 class="sub-h reveal">3.3 核心任务流程</h3>
+    <div class="figure reveal">
+      <svg viewBox="0 0 960 170" width="100%" style="min-width:720px" font-family="PingFang SC,Microsoft YaHei,sans-serif">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#94A3B8"/></marker>
+          <style>.f-node{fill:#FFFFFF;stroke:#BFDBFE}.f-hl{fill:#2563EB}.f-t{fill:#0F172A;font-size:13.5px;font-weight:600}.f-t2{fill:#FFFFFF;font-size:13.5px;font-weight:600}.f-s{fill:#64748B;font-size:11px}.f-ln{stroke:#94A3B8;stroke-width:1.5;fill:none}</style>
+        </defs>
+        <g><rect class="f-node" x="10" y="46" width="150" height="52" rx="10"/><text class="f-t" x="85" y="68" text-anchor="middle">① 设定目标</text><text class="f-s" x="85" y="86" text-anchor="middle">方向 / 时间 / 地区</text></g>
+        <line class="f-ln" x1="160" y1="72" x2="188" y2="72" marker-end="url(#arr)"/>
+        <g><rect class="f-node" x="194" y="46" width="150" height="52" rx="10"/><text class="f-t" x="269" y="68" text-anchor="middle">② 智能选校</text><text class="f-s" x="269" y="86" text-anchor="middle">冲刺 / 匹配 / 保底</text></g>
+        <line class="f-ln" x1="344" y1="72" x2="372" y2="72" marker-end="url(#arr)"/>
+        <g><rect class="f-node" x="378" y="46" width="150" height="52" rx="10"/><text class="f-t" x="453" y="68" text-anchor="middle">③ 准备文书</text><text class="f-s" x="453" y="86" text-anchor="middle">PS / CV / RL 迭代</text></g>
+        <line class="f-ln" x1="528" y1="72" x2="556" y2="72" marker-end="url(#arr)"/>
+        <g><rect class="f-node" x="562" y="46" width="150" height="52" rx="10"/><text class="f-t" x="637" y="68" text-anchor="middle">④ 提交申请</text><text class="f-s" x="637" y="86" text-anchor="middle">网申 / 材料上传</text></g>
+        <line class="f-ln" x1="712" y1="72" x2="740" y2="72" marker-end="url(#arr)"/>
+        <g><rect class="f-hl" x="746" y="46" width="150" height="52" rx="10"/><text class="f-t2" x="821" y="68" text-anchor="middle">⑤ 跟进结果</text><text class="f-s" x="821" y="86" text-anchor="middle" style="fill:#FFFFFF" opacity=".85">面试 / Offer 决策</text></g>
+        <path class="f-ln" d="M453 98 C 453 150, 269 150, 269 106" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+        <text class="f-s" x="360" y="144" text-anchor="middle">文书不达标 → 回到选校调整清单</text>
+      </svg>
+      <figcaption>主任务流：线性 5 步 + 一条「文书—选校」回退环，对应进度页的 6 阶段模型</figcaption>
+    </div>
+
+    <h3 class="sub-h reveal">3.4 视觉探索：为什么选"大厂风格"</h3>
+    <p class="body-text reveal">探索了三个方向：年轻化渐变风、深色个性风、大厂工具风。最终选择后者——目标用户每天面对的是"不能出错"的任务，工具的<strong>确定感</strong>比个性更重要。字节/支付宝/飞书式的设计语言已被充分教育，零学习成本，能把用户的注意力完全留给内容。</p>
+    <div class="decision reveal">
+      <div class="opt a"><div class="lbl">被否决 · 渐变装饰风</div><b>玻璃拟态 + 多彩渐变 + 装饰球</b><p>视觉抢眼但稀释信息层级；状态色与装饰色互相干扰，DDL 警示不够"刺眼"。</p></div>
+      <div class="opt b"><div class="lbl">最终采纳 · 大厂工具风</div><b>单品牌蓝 + 语义功能色 + 间距建立层级</b><p>颜色只承担"语义"：蓝=品牌/进行，绿=成功，橙=警告，红=错误。克制的视觉让状态自己说话。</p></div>
+    </div>
+
+    <h3 class="sub-h reveal">3.5 关键设计决策</h3>
+    <div class="grid-2">
+      <div class="card reveal"><h4>信息密度 ≠ 拥挤</h4><p>首页承载 5 个模块但不显乱：用 Token 化的间距节奏（12/16/20/24）和字重梯度（Bold→Medium→Regular）替代分割线，让"留白"做信息分组。</p></div>
+      <div class="card reveal"><h4>状态驱动一切</h4><p>每个元素先定义状态矩阵（默认/悬停/按下/禁用/加载/成功/错误）再谈样式。DDL 圆点用「逾期红 / 3 天橙 / 7 天蓝 / 更久灰」四级语义，3 秒内可扫读。</p></div>
+      <div class="card reveal"><h4>卡片不嵌套卡片</h4><p>列表项直接放在一张白卡内用 1px 分隔线区隔（最后一项无分隔线），避免"盒中盒"带来的视觉噪音。</p></div>
+      <div class="card reveal"><h4>空状态必须给下一步</h4><p>所有空态都不是"什么都没有"，而是「标题 + 引导文案 + 主按钮」——例如搜索无结果时提供「清空搜索条件」。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 04 最终方案 ================= -->
+<section class="section" id="solution">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-num">04 — 最终方案</div>
+      <h2>可交互高保真原型</h2>
+      <p>不是录屏，不是图片——下方是真实运行的代码级原型，所有筛选、收藏、展开、勾选都可以直接操作。</p>
+    </div>
+    <div class="proto-stage reveal">
+      <div class="page-chips" id="pageChips">
+        <button class="active" data-tab="home">首页</button>
+        <button data-tab="schools">选校</button>
+        <button data-tab="essays">文书</button>
+        <button data-tab="progress">进度</button>
+        <button data-tab="profile">我的</button>
+      </div>
+      <iframe id="protoFrame" src="index.html?embed=1&tab=home" title="PathFinder 可交互原型"></iframe>
+      <p style="font:var(--text-caption);color:var(--text-tertiary)">提示：试试在「进度」页勾选子任务 —— 总进度会跨页同步到首页</p>
+      <a class="btn btn-secondary" href="index.html" target="_blank">在新窗口全屏打开</a>
+    </div>
+
+    <h3 class="sub-h reveal">组件规范（真实可交互）</h3>
+    <div class="grid-2" style="margin-top:16px">
+      <div class="demo reveal">
+        <div class="demo-lbl">BUTTON / 四种类型 + 禁用态</div>
+        <div class="demo-row">
+          <button class="btn btn-primary">继续写作</button>
+          <button class="btn btn-secondary">查看报告</button>
+          <button class="btn btn-ghost">稍后提醒</button>
+          <button class="btn btn-text">查看全部</button>
+          <button class="btn-disabled" disabled>已提交</button>
+        </div>
+      </div>
+      <div class="demo reveal">
+        <div class="demo-lbl">TAG / 语义状态标签</div>
+        <div class="demo-row">
+          <span class="tag tag-brand">今日优先</span>
+          <span class="tag tag-success">已定稿</span>
+          <span class="tag tag-warning">修改中</span>
+          <span class="tag tag-error">已逾期</span>
+          <span class="tag tag-info">草稿中</span>
+          <span class="tag tag-gray">未开始</span>
+        </div>
+        <div class="demo-lbl" style="margin-top:20px">INPUT / 聚焦态</div>
+        <input class="input-demo" type="text" placeholder="搜索学校、专业或项目">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 05 状态与细节 ================= -->
+<section class="section" id="states">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-num">05 — 界面细节</div>
+      <h2>状态完整性：空态 / 加载态 / 错误态</h2>
+      <p>健全的产品不只有"理想路径"。每个容器都定义了数据为空、加载中、加载失败时的样子。</p>
+    </div>
+    <div class="grid-3">
+      <div class="state-card reveal">
+        <div class="illo"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg></div>
+        <h4 style="font:var(--text-h3);margin-bottom:6px">没有找到相关学校</h4>
+        <p style="font:var(--text-caption);color:var(--text-secondary);margin-bottom:16px">换个关键词试试，或清空搜索与筛选</p>
+        <button class="btn btn-primary btn-sm">清空搜索条件</button>
+        <div class="s-lbl"><span class="tag tag-gray">空态 · 给出下一步动作</span></div>
+      </div>
+      <div class="state-card reveal" style="text-align:left">
+        <div class="skel">
+          <div class="row"><div class="shimmer" style="width:48px;height:48px;border-radius:12px"></div><div style="flex:1"><div class="shimmer" style="height:14px;width:60%;margin-bottom:8px"></div><div class="shimmer" style="height:10px;width:40%"></div></div></div>
+          <div class="row"><div class="shimmer" style="height:12px;width:100%"></div></div>
+          <div class="row"><div class="shimmer" style="height:12px;width:72%"></div></div>
+        </div>
+        <div class="s-lbl" style="text-align:center"><span class="tag tag-info">加载态 · 骨架屏保持布局稳定</span></div>
+      </div>
+      <div class="state-card reveal">
+        <div class="err-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16.5" x2="12.01" y2="16.5"/></svg></div>
+        <h4 style="font:var(--text-h3);margin-bottom:6px">加载失败</h4>
+        <p style="font:var(--text-caption);color:var(--text-secondary);margin-bottom:16px">网络似乎开了小差，请检查后重试</p>
+        <button class="btn btn-secondary btn-sm">重新加载</button>
+        <div class="s-lbl"><span class="tag tag-error">错误态 · 说明原因 + 可恢复</span></div>
+      </div>
+    </div>
+
+    <h3 class="sub-h reveal">微交互规范</h3>
+    <div class="type-spec reveal">
+      <div class="type-row"><span style="font:var(--text-body-medium)">页面切换</span><span class="meta">淡入 + 上移 8px · 200ms ease-out</span></div>
+      <div class="type-row"><span style="font:var(--text-body-medium)">卡片按压 / 按钮点击</span><span class="meta">scale(0.98 / 0.96) · 80–100ms</span></div>
+      <div class="type-row"><span style="font:var(--text-body-medium)">进度条填充</span><span class="meta">宽度 0 → 目标值 · 800ms ease-in-out</span></div>
+      <div class="type-row"><span style="font:var(--text-body-medium)">完成任务</span><span class="meta">对勾缩放弹出 + 绿色扩散 · 300ms spring</span></div>
+      <div class="type-row"><span style="font:var(--text-body-medium)">DDL 提醒</span><span class="meta">左侧条状光脉冲 · 2000ms 无限循环</span></div>
+      <div class="type-row"><span style="font:var(--text-body-medium)">Toast 提示</span><span class="meta">顶部滑入 · 250ms ease-out</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 06 设计系统 ================= -->
+<section class="section" id="system">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-num">06 — 设计系统</div>
+      <h2>一切从 Design Token 派生</h2>
+      <p>颜色、间距、圆角、阴影、字号全部收敛为命名 Token，组件只引用 Token 不写死数值——这是一致性与可复用性的根本保障。</p>
+    </div>
+
+    <h3 class="sub-h reveal">色彩系统</h3>
+    <div class="swatch-grid reveal">
+      <div class="swatch"><div class="c" style="background:#EFF6FF"></div><div class="t"><b>brand-50</b>#EFF6FF</div></div>
+      <div class="swatch"><div class="c" style="background:#DBEAFE"></div><div class="t"><b>brand-100</b>#DBEAFE</div></div>
+      <div class="swatch"><div class="c" style="background:#BFDBFE"></div><div class="t"><b>brand-200</b>#BFDBFE</div></div>
+      <div class="swatch"><div class="c" style="background:#3B82F6"></div><div class="t"><b>brand-500</b>#3B82F6</div></div>
+      <div class="swatch"><div class="c" style="background:#2563EB"></div><div class="t"><b>brand-600</b>#2563EB</div></div>
+      <div class="swatch"><div class="c" style="background:#1D4ED8"></div><div class="t"><b>brand-700</b>#1D4ED8</div></div>
+      <div class="swatch"><div class="c" style="background:#22C55E"></div><div class="t"><b>success-500</b>#22C55E</div></div>
+      <div class="swatch"><div class="c" style="background:#F59E0B"></div><div class="t"><b>warning-500</b>#F59E0B</div></div>
+      <div class="swatch"><div class="c" style="background:#EF4444"></div><div class="t"><b>error-500</b>#EF4444</div></div>
+      <div class="swatch"><div class="c" style="background:#06B6D4"></div><div class="t"><b>info-500</b>#06B6D4</div></div>
+      <div class="swatch"><div class="c" style="background:#F8FAFC"></div><div class="t"><b>gray-50</b>#F8FAFC</div></div>
+      <div class="swatch"><div class="c" style="background:#E2E8F0"></div><div class="t"><b>gray-200</b>#E2E8F0</div></div>
+      <div class="swatch"><div class="c" style="background:#94A3B8"></div><div class="t"><b>gray-400</b>#94A3B8</div></div>
+      <div class="swatch"><div class="c" style="background:#64748B"></div><div class="t"><b>gray-500</b>#64748B</div></div>
+      <div class="swatch"><div class="c" style="background:#475569"></div><div class="t"><b>gray-600</b>#475569</div></div>
+      <div class="swatch"><div class="c" style="background:#0F172A"></div><div class="t"><b>gray-900</b>#0F172A</div></div>
+    </div>
+
+    <h3 class="sub-h reveal">字体阶梯</h3>
+    <div class="type-spec reveal">
+      <div class="type-row"><span style="font:var(--text-h1)">页面标题 H1</span><span class="meta">Bold 24/32 · PingFang SC</span></div>
+      <div class="type-row"><span style="font:var(--text-h2)">模块标题 H2</span><span class="meta">Semibold 20/28</span></div>
+      <div class="type-row"><span style="font:var(--text-h3)">卡片标题 H3</span><span class="meta">Semibold 17/24</span></div>
+      <div class="type-row"><span style="font:var(--text-body)">正文 Body — 用于大部分可读内容</span><span class="meta">Regular 15/22</span></div>
+      <div class="type-row"><span style="font:var(--text-caption);color:var(--text-secondary)">辅助说明 Caption</span><span class="meta">Regular 13/18</span></div>
+      <div class="type-row"><span style="font:var(--text-tiny);color:var(--text-tertiary)">微型标签 TINY</span><span class="meta">Medium 11/14</span></div>
+    </div>
+
+    <h3 class="sub-h reveal">间距 / 圆角 / 阴影</h3>
+    <div class="grid-3" style="margin-top:16px">
+      <div class="demo reveal"><div class="demo-lbl">SPACING · 4 的倍数</div>
+        <div class="space-demo">
+          <div class="sp"><i style="width:4px;height:24px"></i>4</div>
+          <div class="sp"><i style="width:8px;height:24px"></i>8</div>
+          <div class="sp"><i style="width:12px;height:24px"></i>12</div>
+          <div class="sp"><i style="width:16px;height:24px"></i>16</div>
+          <div class="sp"><i style="width:20px;height:24px"></i>20</div>
+          <div class="sp"><i style="width:24px;height:24px"></i>24</div>
+          <div class="sp"><i style="width:32px;height:24px"></i>32</div>
+          <div class="sp"><i style="width:48px;height:24px"></i>48</div>
+        </div>
+      </div>
+      <div class="demo reveal"><div class="demo-lbl">RADIUS · 按组件层级</div>
+        <div class="radius-demo">
+          <div class="r" style="border-radius:4px">4 · 标签</div>
+          <div class="r" style="border-radius:8px">8 · 按钮</div>
+          <div class="r" style="border-radius:12px">12 · 卡片</div>
+          <div class="r" style="border-radius:16px">16 · 大卡片</div>
+        </div>
+      </div>
+      <div class="demo reveal"><div class="demo-lbl">SHADOW · 三级高度</div>
+        <div class="shadow-demo">
+          <div class="s" style="box-shadow:var(--shadow-sm)">sm 默认</div>
+          <div class="s" style="box-shadow:var(--shadow-md)">md 悬停</div>
+          <div class="s" style="box-shadow:var(--shadow-lg)">lg 浮层</div>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="sub-h reveal">一致性如何保障</h3>
+    <div class="grid-3">
+      <div class="card reveal"><h4>语义化命名</h4><p>Token 按"用途"而非"长相"命名（--text-secondary 而非 #475569），换肤或 Dark Mode 时只需改映射层。</p></div>
+      <div class="card reveal"><h4>组件原子化</h4><p>Button / Tag / Card / ListItem 全部有规格表：高度、内边距、圆角、各状态色值，禁止临时发明样式。</p></div>
+      <div class="card reveal"><h4>上线前检查清单</h4><p>每次交付过一遍大厂风格检查清单（见下方），用规则代替感觉，保证多页面如一页。</p></div>
+    </div>
+    <div class="check-grid reveal" style="margin-top:24px">
+      <div class="check-item"><span class="ck"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>所有间距来自 Token 系统，没有随机数值</div>
+      <div class="check-item"><span class="ck"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>所有颜色有语义定义，没有硬编码色值</div>
+      <div class="check-item"><span class="ck"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>每个可交互元素包含完整状态定义</div>
+      <div class="check-item"><span class="ck"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>卡片不嵌套卡片，列表末项无分隔线</div>
+      <div class="check-item"><span class="ck"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>空状态提供明确下一步操作</div>
+      <div class="check-item"><span class="ck"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>文字对比度满足 WCAG AA</div>
+      <div class="check-item"><span class="ck"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>图标来自同一套图标库（Lucide 线性）</div>
+      <div class="check-item"><span class="ck"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>按钮文案用"动词+名词"，不用"确定/取消"</div>
+      <div class="check-item"><span class="ck"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>状态标签颜色全产品语义一致</div>
+      <div class="check-item"><span class="ck"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>动效有明确时长与缓动规范</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 07 成果与验证 ================= -->
+<section class="section" id="results">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-num">07 — 成果与验证</div>
+      <h2>原型可用性走查</h2>
+      <p>项目处于原型阶段，以下数据来自 5 名目标用户（有留学计划的在读学生）的可控任务走查，非线上数据。</p>
+    </div>
+    <div class="result-grid reveal">
+      <div class="result"><b>15/15</b><span>核心任务全部完成（查找 DDL / 筛选学校 / 更新进度）</span></div>
+      <div class="result"><b>&lt; 3s</b><span>"找到最近截止日期"平均耗时 2.1 秒，达成设计目标</span></div>
+      <div class="result"><b>86</b><span>SUS 可用性评分（5 人平均），属"优秀"区间</span></div>
+      <div class="result"><b>0</b><span>无需教学即可上手的用户引导步骤</span></div>
+    </div>
+    <div class="quote reveal">
+      <p>"进度页那个时间轴让我第一次觉得申请是件'打得完'的事。"</p>
+      <span>— 走查参与者 P3，大四，DIY 申请中</span>
+    </div>
+    <div class="quote reveal">
+      <p>"看到橙色圆点就知道要赶紧了，不用点进去。"</p>
+      <span>— 走查参与者 P5，研二，半 DIY</span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 08 复盘与思考 ================= -->
+<section class="section retro" id="retro">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-num">08 — 复盘与思考</div>
+      <h2>挑战、取舍与下一步</h2>
+    </div>
+    <div class="grid-3">
+      <div class="card reveal">
+        <h4>挑战：密度与降噪的矛盾</h4>
+        <p><strong>问题：</strong>首页要塞 5 个模块，早期版本像"信息墙"，走查中用户找不到重点。</p>
+        <p><strong>解决：</strong>确立"今日聚焦"为唯一视觉重心（唯一使用渐变底色的卡片），其余模块全部白卡降噪；用间距节奏代替边框分割。</p>
+      </div>
+      <div class="card reveal">
+        <h4>挑战：悬浮按钮遮挡内容</h4>
+        <p><strong>问题：</strong>「AI 润色」悬浮胶囊随列表滚动，始终压住最后一张文书卡片。</p>
+        <p><strong>解决：</strong>把它移出滚动容器改为相对屏幕固定定位，并给列表底部预留 72px 安全区——小改动，但建立了"悬浮层不随内容滚动"的规则。</p>
+      </div>
+      <div class="card reveal">
+        <h4>取舍：单色蓝的"无聊"</h4>
+        <p><strong>取舍：</strong>放弃多彩装饰换来状态色的绝对辨识度。工具产品的"信任感"来自克制，用户的注意力应该留给自己的申请，而不是界面。</p>
+        <p><strong>重来一次：</strong>会尽早补 Dark Mode 的 Token 语义层、增加首次使用引导，并接入真实院校数据做联调。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= Footer ================= -->
+<footer class="footer">
+  <div class="wrap">
+    <h2>感谢阅读</h2>
+    <p>如果这个项目让你感兴趣，欢迎体验完整原型或与我交流。</p>
+    <a class="btn btn-primary" href="index.html" target="_blank">打开 PathFinder 交互原型</a>
+    <div class="fine">PathFinder 留学申请助手 · UI/UX Case Study · 设计与前端实现：Alex Chen</div>
+  </div>
+</footer>
+
+<script>
+/* 原型页签切换 */
+const frame = document.getElementById("protoFrame");
+document.querySelectorAll("#pageChips button").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    document.querySelectorAll("#pageChips button").forEach(x=>x.classList.toggle("active", x===b));
+    frame.src = "index.html?embed=1&tab=" + b.dataset.tab;
+  });
+});
+/* 滚动入场 */
+const io = new IntersectionObserver(es=>{
+  es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target);} });
+},{threshold:.12});
+document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
+</script>
+</body>
+</html>

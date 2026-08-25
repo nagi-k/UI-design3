@@ -378,6 +378,12 @@ input{font-family:inherit;border:none;outline:none;background:none;color:inherit
 .tab .ind{width:16px;height:2px;border-radius:1px;background:transparent;transition:background .2s}
 .tab.active .ind{background:var(--brand-600)}
 
+/* 嵌入模式：作为作品集模块被 iframe 引用时 */
+body.embed{background:var(--gray-50);overflow:auto}
+body.embed .caption,body.embed .showside{display:none}
+body.embed .stage{padding:0;gap:0}
+body.embed .phone{height:852px}
+
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
 }
@@ -962,6 +968,10 @@ renderEssays();
 renderStages();
 renderMenus();
 animateRing();
+const params = new URLSearchParams(location.search);
+if(params.get("embed")) document.body.classList.add("embed");
+const urlTab = params.get("tab");
+if(urlTab && document.getElementById("page-"+urlTab)) switchTab(urlTab);
 setTimeout(()=>animateBars("#page-home"), 250);
 </script>
 </body>
