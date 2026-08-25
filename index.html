@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PathFinder 留学申请助手 · 交互原型</title>
+<style>
+/* ============================================================
+   PathFinder Design Token 系统
+   ============================================================ */
+:root{
+  /* 品牌色 */
+  --brand-50:#EFF6FF; --brand-100:#DBEAFE; --brand-200:#BFDBFE;
+  --brand-500:#3B82F6; --brand-600:#2563EB; --brand-700:#1D4ED8;
+  /* 功能色 */
+  --success-50:#F0FDF4; --success-500:#22C55E;
+  --warning-50:#FFFBEB; --warning-500:#F59E0B;
+  --error-50:#FEF2F2;   --error-500:#EF4444;
+  --info-50:#ECFEFF;    --info-500:#06B6D4;
+  /* 中性色 */
+  --gray-0:#FFFFFF; --gray-50:#F8FAFC; --gray-100:#F1F5F9; --gray-200:#E2E8F0;
+  --gray-300:#CBD5E1; --gray-400:#94A3B8; --gray-500:#64748B; --gray-600:#475569;
+  --gray-700:#334155; --gray-800:#1E293B; --gray-900:#0F172A;
+  /* 文本色 */
+  --text-primary:var(--gray-900); --text-secondary:var(--gray-600);
+  --text-tertiary:var(--gray-500); --text-disabled:var(--gray-400);
+  --text-inverse:var(--gray-0);
+  /* 间距 */
+  --space-4:4px; --space-8:8px; --space-12:12px; --space-16:16px;
+  --space-20:20px; --space-24:24px; --space-32:32px; --space-48:48px;
+  /* 圆角 */
+  --radius-4:4px; --radius-8:8px; --radius-12:12px; --radius-16:16px; --radius-full:999px;
+  /* 阴影 */
+  --shadow-sm:0 1px 2px rgba(15,23,42,.05);
+  --shadow-md:0 4px 6px -1px rgba(15,23,42,.08),0 2px 4px -1px rgba(15,23,42,.04);
+  --shadow-lg:0 10px 15px -3px rgba(15,23,42,.08),0 4px 6px -2px rgba(15,23,42,.04);
+  /* 字体 */
+  --font-sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",-apple-system,sans-serif;
+  --text-h1:700 24px/32px var(--font-sans);
+  --text-h2:600 20px/28px var(--font-sans);
+  --text-h3:600 17px/24px var(--font-sans);
+  --text-body:400 15px/22px var(--font-sans);
+  --text-body-medium:500 15px/22px var(--font-sans);
+  --text-caption:400 13px/18px var(--font-sans);
+  --text-caption-medium:500 13px/18px var(--font-sans);
+  --text-tiny:500 11px/14px var(--font-sans);
+  /* 动效 */
+  --ease-out:cubic-bezier(.16,1,.3,1);
+  --ease-spring:cubic-bezier(.34,1.56,.64,1);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font:var(--text-body); color:var(--text-primary); background:#0B1220;
+  display:flex; align-items:center; justify-content:center;
+  background-image:radial-gradient(rgba(148,163,184,.08) 1px,transparent 1px);
+  background-size:24px 24px; overflow:hidden;
+}
+button{font-family:inherit;border:none;background:none;cursor:pointer;color:inherit}
+input{font-family:inherit;border:none;outline:none;background:none;color:inherit}
+
+/* ============================================================
+   舞台布局（作品集展示外壳）
+   ============================================================ */
+.stage{display:flex;align-items:center;gap:64px;padding:24px}
+.showside{max-width:300px;color:var(--gray-300);display:none}
+@media(min-width:1080px){.showside{display:block}}
+.showside .kicker{font:var(--text-tiny);letter-spacing:.14em;text-transform:uppercase;color:var(--brand-500);margin-bottom:12px}
+.showside h1{font:700 28px/36px var(--font-sans);color:var(--gray-0);margin-bottom:12px}
+.showside p{font:var(--text-caption);color:var(--gray-400);margin-bottom:24px}
+.token-row{display:flex;flex-wrap:wrap;gap:8px}
+.token-chip{font:var(--text-tiny);color:var(--gray-300);border:1px solid rgba(148,163,184,.25);border-radius:var(--radius-full);padding:5px 10px}
+.caption{position:fixed;bottom:18px;left:0;right:0;text-align:center;font:var(--text-tiny);color:var(--gray-500);letter-spacing:.06em}
+
+/* ============================================================
+   手机壳
+   ============================================================ */
+.phone{
+  width:402px;height:min(852px,calc(100vh - 72px));min-height:640px;
+  background:#111827;border-radius:56px;padding:6px;
+  box-shadow:0 40px 80px -20px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08) inset;
+  position:relative;flex-shrink:0;
+}
+.screen{
+  width:100%;height:100%;background:var(--gray-50);border-radius:50px;
+  overflow:hidden;position:relative;display:flex;flex-direction:column;
+}
+.island{
+  position:absolute;top:12px;left:50%;transform:translateX(-50%);
+  width:112px;height:30px;background:#0B1220;border-radius:var(--radius-full);z-index:60;
+}
+.statusbar{
+  height:54px;flex-shrink:0;display:flex;align-items:flex-end;justify-content:space-between;
+  padding:0 28px 6px;font:600 14px/20px var(--font-sans);color:var(--text-primary);
+  position:relative;z-index:50;background:transparent;
+}
+.statusbar .sb-icons{display:flex;align-items:center;gap:6px;color:var(--text-primary)}
+
+/* ============================================================
+   页面容器 & 切换动效（淡入 + 上移 8px / 200ms ease-out）
+   ============================================================ */
+.main{flex:1;position:relative;overflow:hidden}
+.page{
+  position:absolute;inset:0;overflow-y:auto;overscroll-behavior:contain;
+  padding:0 var(--space-20) 24px;display:none;scrollbar-width:none;
+}
+.page::-webkit-scrollbar{display:none}
+.page.active{display:block}
+.page.enter{animation:pageIn .2s var(--ease-out)}
+@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ============================================================
+   通用组件
+   ============================================================ */
+.card{background:var(--gray-0);border-radius:var(--radius-12);padding:var(--space-16);box-shadow:var(--shadow-sm);transition:box-shadow .15s ease}
+.card.hoverable:hover{box-shadow:var(--shadow-md)}
+.pressable{transition:transform .1s var(--ease-out),box-shadow .15s ease}
+.pressable:active{transform:scale(.98)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:var(--radius-8);font:var(--text-body-medium);transition:background .15s ease,transform .08s var(--ease-out)}
+.btn:active{transform:scale(.96)}
+.btn-primary{height:44px;padding:0 16px;background:var(--brand-600);color:var(--text-inverse)}
+.btn-primary:hover{background:var(--brand-700)}
+.btn-text{height:36px;padding:0 8px;color:var(--brand-600);border-radius:var(--radius-4)}
+.btn-text:hover{background:var(--brand-50)}
+
+.tag{display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:var(--radius-4);font:var(--text-tiny)}
+.tag-brand{background:var(--brand-50);color:var(--brand-700)}
+.tag-success{background:var(--success-50);color:#16A34A}
+.tag-warning{background:var(--warning-50);color:#D97706}
+.tag-error{background:var(--error-50);color:#DC2626}
+.tag-info{background:var(--info-50);color:#0891B2}
+.tag-gray{background:var(--gray-100);color:var(--gray-700)}
+
+.section-head{display:flex;align-items:center;justify-content:space-between;margin:var(--space-24) 0 var(--space-12)}
+.section-head h3{font:var(--text-h3)}
+.section-head .link{font:var(--text-caption-medium);color:var(--brand-600);height:28px;padding:0 4px;border-radius:var(--radius-4)}
+.section-head .link:hover{background:var(--brand-50)}
+
+/* ============================================================
+   Toast（顶部滑入 250ms）
+   ============================================================ */
+.toast{
+  position:absolute;top:60px;left:50%;transform:translate(-50%,-16px);
+  background:var(--gray-900);color:var(--gray-0);font:var(--text-caption-medium);
+  padding:10px 16px;border-radius:var(--radius-full);box-shadow:var(--shadow-lg);
+  opacity:0;pointer-events:none;transition:opacity .25s var(--ease-out),transform .25s var(--ease-out);
+  z-index:80;display:flex;align-items:center;gap:8px;white-space:nowrap;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast .dot{width:6px;height:6px;border-radius:var(--radius-full);background:var(--success-500)}
+
+/* ============================================================
+   首页
+   ============================================================ */
+.home-header{height:56px;display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-16)}
+.home-header h2{font:var(--text-h3)}
+.home-header .date{font:var(--text-caption);color:var(--text-secondary);margin-top:2px}
+.bell{position:relative;width:40px;height:40px;border-radius:var(--radius-full);display:flex;align-items:center;justify-content:center;color:var(--gray-700);transition:background .15s}
+.bell:hover{background:var(--gray-100)}
+.bell .unread{position:absolute;top:9px;right:9px;width:8px;height:8px;border-radius:var(--radius-full);background:var(--error-500);border:2px solid var(--gray-50)}
+
+.focus-card{
+  background:linear-gradient(135deg,#EFF6FF 0%,#DBEAFE 100%);
+  border-radius:var(--radius-16);padding:var(--space-20);
+}
+.focus-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-16)}
+.focus-top .ddl{font:var(--text-caption-medium);color:var(--brand-700)}
+.focus-mid{display:flex;gap:var(--space-12);margin-bottom:var(--space-20)}
+.focus-icon{width:40px;height:40px;flex-shrink:0;border-radius:var(--radius-full);background:var(--gray-0);display:flex;align-items:center;justify-content:center;color:var(--brand-600);box-shadow:var(--shadow-sm)}
+.focus-mid h2{font:var(--text-h2);margin-bottom:4px}
+.focus-mid p{font:var(--text-body);color:var(--text-secondary)}
+.focus-actions{display:flex;align-items:center;gap:var(--space-8)}
+.focus-actions .btn-primary{flex:1}
+
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-12)}
+.quick-item{display:flex;flex-direction:column;gap:2px;text-align:left}
+.quick-item .qi{width:40px;height:40px;border-radius:var(--radius-12);background:var(--brand-50);color:var(--brand-600);display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-8)}
+.quick-item b{font:500 14px/20px var(--font-sans)}
+.quick-item span{font:400 12px/16px var(--font-sans);color:var(--text-tertiary)}
+
+.prog-card .pct{font:var(--text-h2);color:var(--brand-600)}
+.bar{height:8px;border-radius:var(--radius-4);background:var(--gray-100);overflow:hidden;margin:var(--space-12) 0 var(--space-16)}
+.bar>i{display:block;height:100%;width:0;border-radius:var(--radius-4);background:linear-gradient(90deg,#3B82F6,#06B6D4);transition:width .8s ease-in-out}
+.stat-row{display:flex}
+.stat{flex:1;text-align:center}
+.stat b{display:block;font:700 20px/26px var(--font-sans)}
+.stat span{font:400 12px/16px var(--font-sans);color:var(--text-tertiary)}
+
+.ddl-list{padding:0 var(--space-16)}
+.ddl-item{display:flex;align-items:center;gap:var(--space-12);height:72px;border-bottom:1px solid var(--gray-100);position:relative;width:100%;text-align:left}
+.ddl-item:last-child{border-bottom:none}
+.ddl-item .dot{width:8px;height:8px;border-radius:var(--radius-full);flex-shrink:0}
+.ddl-item .tt{flex:1;min-width:0}
+.ddl-item .tt b{display:block;font:var(--text-body-medium);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ddl-item .tt span{font:var(--text-caption);color:var(--text-secondary)}
+.ddl-item .dt{font:var(--text-caption);color:var(--text-secondary);flex-shrink:0}
+.ddl-item .chev{color:var(--gray-300);flex-shrink:0}
+.ddl-item.urgent::before{
+  content:"";position:absolute;left:-16px;top:14px;bottom:14px;width:3px;border-radius:2px;
+  background:var(--warning-500);animation:barPulse 2s ease-in-out infinite;
+}
+@keyframes barPulse{0%,100%{opacity:.35}50%{opacity:1}}
+
+/* ============================================================
+   选校页
+   ============================================================ */
+.page-title-row{display:flex;align-items:center;justify-content:space-between;height:56px;margin-bottom:var(--space-12)}
+.page-title-row h1{font:var(--text-h1)}
+.searchbar{height:48px;background:var(--gray-0);border-radius:var(--radius-12);box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:var(--space-8);padding:0 var(--space-12);margin-bottom:var(--space-12)}
+.searchbar svg{color:var(--text-tertiary);flex-shrink:0}
+.searchbar input{flex:1;font:var(--text-body);height:100%}
+.searchbar input::placeholder{color:var(--text-tertiary)}
+.searchbar .filter-btn{width:36px;height:36px;border-radius:var(--radius-8);display:flex;align-items:center;justify-content:center;color:var(--gray-700);background:var(--gray-100)}
+.searchbar .filter-btn:hover{background:var(--gray-200)}
+
+.chips{display:flex;gap:var(--space-8);overflow-x:auto;padding-bottom:var(--space-12);scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;height:32px;padding:0 14px;border-radius:var(--radius-full);font:var(--text-caption-medium);background:var(--gray-100);color:var(--gray-700);transition:background .15s,color .15s,transform .08s}
+.chip:active{transform:scale(.96)}
+.chip.active{background:var(--brand-600);color:var(--text-inverse)}
+
+.school-card{margin-bottom:var(--space-12)}
+.school-top{display:flex;align-items:center;gap:var(--space-12);margin-bottom:var(--space-12)}
+.school-logo{width:48px;height:48px;border-radius:var(--radius-12);display:flex;align-items:center;justify-content:center;font:700 15px/20px var(--font-sans);color:var(--gray-0);flex-shrink:0}
+.school-top .nm{flex:1;min-width:0}
+.school-top .nm b{display:block;font:var(--text-h3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.school-top .nm span{font:var(--text-caption);color:var(--text-secondary)}
+.star{color:var(--gray-300);width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-full);transition:transform .15s var(--ease-spring),color .15s}
+.star:hover{background:var(--gray-100)}
+.star.on{color:var(--warning-500)}
+.star.pop{animation:starPop .3s var(--ease-spring)}
+@keyframes starPop{0%{transform:scale(.6)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+.school-mid{display:flex;align-items:center;gap:var(--space-8);margin-bottom:var(--space-12)}
+.school-mid .pg{font:var(--text-body-medium);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.school-mid .dd{font:var(--text-caption);color:var(--text-secondary);flex-shrink:0}
+.school-bot{display:flex;align-items:center;gap:var(--space-12)}
+.probring{position:relative;width:44px;height:44px;flex-shrink:0}
+.probring svg{transform:rotate(-90deg)}
+.probring i{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 10px/14px var(--font-sans);font-style:normal}
+.school-bot .ptxt{font:var(--text-caption);color:var(--text-secondary);flex:1}
+
+.fab{
+  position:absolute;right:20px;bottom:20px;width:56px;height:56px;border-radius:var(--radius-full);display:none;
+  background:var(--brand-600);color:var(--gray-0);align-items:center;justify-content:center;
+  box-shadow:0 10px 15px rgba(37,99,235,.3);transition:transform .1s var(--ease-out),background .15s;z-index:40;
+}
+.fab.show{display:flex}
+.fab:hover{background:var(--brand-700)}
+.fab:active{transform:scale(.94)}
+
+.empty{padding:56px 24px;text-align:center}
+.empty .illo{width:120px;height:120px;margin:0 auto var(--space-20);border-radius:var(--radius-full);background:var(--gray-100);display:flex;align-items:center;justify-content:center;color:var(--gray-400)}
+.empty h3{font:var(--text-h3);margin-bottom:var(--space-8)}
+.empty p{font:var(--text-caption);color:var(--text-secondary);margin-bottom:var(--space-20)}
+
+/* ============================================================
+   文书页
+   ============================================================ */
+.essay-card{display:flex;align-items:center;gap:var(--space-12);margin-bottom:var(--space-12);width:100%;text-align:left}
+.essay-icon{width:40px;height:40px;border-radius:var(--radius-12);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.essay-mid{flex:1;min-width:0}
+.essay-mid b{display:block;font:var(--text-body-medium);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.essay-mid span{font:var(--text-caption);color:var(--text-secondary)}
+.essay-mid .ver{font:var(--text-tiny);color:var(--text-tertiary);margin-left:6px}
+.essay-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.essay-right .dd{font:var(--text-caption);color:var(--text-secondary)}
+#essayList{padding-bottom:72px}
+#schoolList{padding-bottom:72px}
+.ai-pill{
+  position:absolute;left:50%;transform:translateX(-50%);bottom:24px;height:44px;padding:0 20px;display:none;
+  border-radius:var(--radius-full);background:var(--brand-600);color:var(--gray-0);
+  align-items:center;gap:8px;font:var(--text-body-medium);
+  box-shadow:0 10px 15px rgba(37,99,235,.3);transition:transform .1s var(--ease-out),background .15s;z-index:40;
+}
+.ai-pill.show{display:flex}
+.ai-pill:hover{background:var(--brand-700)}
+.ai-pill:active{transform:translateX(-50%) scale(.94)}
+
+/* ============================================================
+   进度页
+   ============================================================ */
+.ov-card{border-radius:var(--radius-16);padding:var(--space-20);text-align:center}
+.ov-card .big{font:700 48px/56px var(--font-sans);color:var(--brand-600)}
+.ov-card .lbl{font:var(--text-caption);color:var(--text-secondary);margin-bottom:var(--space-16)}
+.ring-wrap{position:relative;width:160px;height:160px;margin:0 auto var(--space-16)}
+.ring-wrap svg{transform:rotate(-90deg)}
+.ring-legend{display:flex;justify-content:center;gap:var(--space-16);margin-bottom:var(--space-16)}
+.ring-legend span{display:flex;align-items:center;gap:6px;font:var(--text-tiny);color:var(--text-secondary)}
+.ring-legend i{width:8px;height:8px;border-radius:2px;font-style:normal}
+
+.stage-card{margin-bottom:var(--space-8);overflow:hidden;transition:background .2s}
+.stage-card.current{background:var(--brand-50);box-shadow:0 0 0 1px var(--brand-100)}
+.stage-head{display:flex;align-items:center;gap:var(--space-12);width:100%;text-align:left}
+.stage-node{width:24px;height:24px;border-radius:var(--radius-full);flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative}
+.stage-node.done{background:var(--success-500);color:var(--gray-0)}
+.stage-node.doing{background:var(--brand-600);color:var(--gray-0)}
+.stage-node.doing::after{content:"";position:absolute;inset:-6px;border-radius:var(--radius-full);border:2px solid var(--brand-500);animation:ringPulse 2s ease-in-out infinite}
+@keyframes ringPulse{0%{transform:scale(.7);opacity:.9}100%{transform:scale(1.3);opacity:0}}
+.stage-node.todo{border:2px solid var(--gray-300)}
+.stage-info{flex:1;min-width:0}
+.stage-info .r1{display:flex;align-items:center;gap:8px}
+.stage-info b{font:var(--text-body-medium)}
+.stage-info .desc{font:var(--text-caption);color:var(--text-secondary)}
+.stage-info .bar{margin:8px 0 0}
+.stage-info .bar>i{background:var(--brand-500)}
+.stage-meta{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.stage-meta .pc{font:var(--text-caption);color:var(--text-tertiary)}
+.stage-meta .chev{color:var(--gray-400);transition:transform .2s var(--ease-out)}
+.stage-card.open .stage-meta .chev{transform:rotate(90deg)}
+.subtasks{max-height:0;overflow:hidden;transition:max-height .3s var(--ease-out)}
+.stage-card.open .subtasks{max-height:320px}
+.sub-inner{padding:var(--space-12) 0 4px 36px}
+.sub-item{display:flex;align-items:center;gap:var(--space-12);height:48px;width:100%;text-align:left;border-bottom:1px solid var(--gray-100)}
+.sub-item:last-child{border-bottom:none}
+.checkbox{width:20px;height:20px;border-radius:6px;border:2px solid var(--gray-300);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--gray-0);transition:background .15s,border-color .15s}
+.sub-item.done .checkbox{background:var(--brand-600);border-color:var(--brand-600)}
+.checkbox svg{opacity:0;transform:scale(.4)}
+.sub-item.done .checkbox svg{opacity:1;transform:scale(1)}
+.sub-item.done .checkbox{animation:checkPop .3s var(--ease-spring)}
+@keyframes checkPop{0%{transform:scale(.7);box-shadow:0 0 0 0 rgba(34,197,94,.5)}60%{transform:scale(1.15)}100%{transform:scale(1);box-shadow:0 0 0 8px rgba(34,197,94,0)}}
+.sub-item .sn{flex:1;font:var(--text-body)}
+.sub-item.done .sn{color:var(--text-tertiary);text-decoration:line-through}
+.sub-item .st{font:var(--text-caption);color:var(--text-disabled)}
+
+/* ============================================================
+   我的页
+   ============================================================ */
+.user-card{border-radius:var(--radius-16);padding:var(--space-20);display:flex;align-items:center;gap:var(--space-16)}
+.avatar{position:relative;width:64px;height:64px;flex-shrink:0}
+.avatar .img{width:64px;height:64px;border-radius:var(--radius-full);border:2px solid var(--gray-200);background:linear-gradient(135deg,#3B82F6,#06B6D4);display:flex;align-items:center;justify-content:center;font:700 22px/28px var(--font-sans);color:var(--gray-0)}
+.avatar .edit{position:absolute;right:-2px;bottom:-2px;width:24px;height:24px;border-radius:var(--radius-full);background:var(--brand-600);color:var(--gray-0);display:flex;align-items:center;justify-content:center;border:2px solid var(--gray-0)}
+.user-info{flex:1;min-width:0}
+.user-info h2{font:var(--text-h2)}
+.user-info p{font:var(--text-caption);color:var(--text-secondary);margin:2px 0 6px}
+.user-card .chev{color:var(--gray-400)}
+.ov4{display:flex;margin-top:var(--space-12)}
+.ov4 .stat{position:relative}
+.ov4 .stat+.stat::before{content:"";position:absolute;left:0;top:6px;bottom:6px;width:1px;background:var(--gray-100)}
+.ov4 .stat b{font-size:24px;line-height:30px}
+
+.vip-card{
+  border-radius:var(--radius-16);padding:var(--space-20);margin-top:var(--space-12);
+  background:linear-gradient(135deg,#1E293B,#334155);color:var(--gray-0);
+  display:flex;align-items:center;gap:var(--space-12);
+}
+.vip-card .crown{width:40px;height:40px;border-radius:var(--radius-12);background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;color:#FCD34D;flex-shrink:0}
+.vip-card .tx{flex:1}
+.vip-card .tx b{display:block;font:var(--text-body-medium)}
+.vip-card .tx span{font:var(--text-tiny);color:var(--gray-400)}
+.vip-card .go{height:32px;padding:0 14px;border:1px solid rgba(255,255,255,.4);border-radius:var(--radius-full);color:var(--gray-0);font:var(--text-caption-medium);transition:background .15s}
+.vip-card .go:hover{background:rgba(255,255,255,.1)}
+
+.group-title{font:var(--text-caption-medium);color:var(--text-tertiary);margin:var(--space-20) 0 var(--space-12)}
+.menu-list{padding:0 var(--space-16)}
+.menu-item{display:flex;align-items:center;gap:var(--space-12);height:56px;width:100%;text-align:left;border-bottom:1px solid var(--gray-100)}
+.menu-item:last-child{border-bottom:none}
+.menu-item .mi{width:40px;height:40px;border-radius:var(--radius-12);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.menu-item .mt{flex:1;font:var(--text-body-medium)}
+.menu-item .chev{color:var(--gray-400)}
+.menu-item .unread-dot{width:8px;height:8px;border-radius:var(--radius-full);background:var(--error-500)}
+.logout{display:block;margin:var(--space-24) auto 0;font:var(--text-body-medium);color:var(--error-500);height:40px;padding:0 16px;border-radius:var(--radius-8)}
+.logout:hover{background:var(--error-50)}
+.version{text-align:center;font:400 12px/16px var(--font-sans);color:var(--text-disabled);margin-top:var(--space-16)}
+
+/* ============================================================
+   底部 Tab Bar
+   ============================================================ */
+.tabbar{
+  height:64px;flex-shrink:0;background:var(--gray-0);border-top:1px solid var(--gray-200);
+  display:flex;padding:6px 8px 12px;position:relative;z-index:50;
+}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--text-tertiary);font:500 10px/14px var(--font-sans);border-radius:var(--radius-8);transition:color .2s}
+.tab svg{transition:transform .2s var(--ease-out)}
+.tab.active{color:var(--brand-600)}
+.tab.active svg{transform:translateY(-1px)}
+.tab .ind{width:16px;height:2px;border-radius:1px;background:transparent;transition:background .2s}
+.tab.active .ind{background:var(--brand-600)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <!-- 作品集侧栏说明（宽屏显示） -->
+  <div class="showside">
+    <div class="kicker">UI Case Study · 2026</div>
+    <h1>PathFinder<br>留学申请助手</h1>
+    <p>大厂风格移动端 UI 设计 · 可点击交互原型。点击底部 Tab 切换页面，试试筛选、收藏、展开阶段与勾选任务。</p>
+    <div class="token-row">
+      <span class="token-chip">Design Token</span>
+      <span class="token-chip">组件原子化</span>
+      <span class="token-chip">状态完整</span>
+      <span class="token-chip">微交互</span>
+      <span class="token-chip">WCAG AA</span>
+    </div>
+  </div>
+
+  <!-- 手机 -->
+  <div class="phone">
+    <div class="screen">
+      <div class="island"></div>
+      <div class="statusbar">
+        <span>9:41</span>
+        <span class="sb-icons">
+          <svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="4.5" y="5" width="3" height="7" rx="1"/><rect x="9" y="2.5" width="3" height="9.5" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="15" height="8" rx="2" fill="currentColor"/><path d="M23.5 4v4a2 2 0 0 0 0-4z" fill="currentColor" opacity=".4"/></svg>
+        </span>
+      </div>
+
+      <div class="toast" id="toast"><span class="dot"></span><span id="toastText">已保存</span></div>
+
+      <div class="main">
+        <!-- ============ 首页 ============ -->
+        <section class="page active" id="page-home">
+          <div class="home-header">
+            <div>
+              <h2>早上好，Alex</h2>
+              <div class="date">12月18日 周三</div>
+            </div>
+            <button class="bell pressable" onclick="toast('暂无新通知')" aria-label="通知">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+              <span class="unread"></span>
+            </button>
+          </div>
+
+          <!-- 今日聚焦 -->
+          <div class="focus-card">
+            <div class="focus-top">
+              <span class="tag tag-brand">今日优先</span>
+              <span class="ddl">剩 3 天</span>
+            </div>
+            <div class="focus-mid">
+              <div class="focus-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              </div>
+              <div>
+                <h2>PS 个人陈述 — CMU</h2>
+                <p>已完成 68%，建议今天补齐结尾段</p>
+              </div>
+            </div>
+            <div class="focus-actions">
+              <button class="btn btn-primary" onclick="toast('正在打开编辑器…')">继续写作</button>
+              <button class="btn btn-text" onclick="switchTab('essays')">查看详情</button>
+            </div>
+          </div>
+
+          <!-- 快捷入口 -->
+          <div class="section-head">
+            <h3>快捷入口</h3>
+            <button class="link" onclick="toast('演示原型：查看全部')">查看全部</button>
+          </div>
+          <div class="quick-grid">
+            <button class="card hoverable pressable quick-item" onclick="switchTab('schools')">
+              <span class="qi"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span>
+              <b>智能选校</b><span>定位匹配院校</span>
+            </button>
+            <button class="card hoverable pressable quick-item" onclick="switchTab('essays')">
+              <span class="qi"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
+              <b>文书中心</b><span>管理申请文书</span>
+            </button>
+            <button class="card hoverable pressable quick-item" onclick="toast('签证清单：12 项待核对')">
+              <span class="qi"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 12l2 2 4-4"/></svg></span>
+              <b>签证清单</b><span>材料一站备齐</span>
+            </button>
+            <button class="card hoverable pressable quick-item" onclick="toast('AI 助手随时为你解答')">
+              <span class="qi"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3z"/></svg></span>
+              <b>AI 助手</b><span>留学问题随时问</span>
+            </button>
+          </div>
+
+          <!-- 申请进度 -->
+          <div class="section-head">
+            <h3>申请进度</h3>
+            <span class="tag tag-brand" id="homePct" style="height:24px;font:var(--text-caption-medium)">68%</span>
+          </div>
+          <div class="card">
+            <div class="bar"><i data-w="68%" id="homeBar"></i></div>
+            <div class="stat-row">
+              <div class="stat"><b>8</b><span>所院校</span></div>
+              <div class="stat"><b>3</b><span>篇文书</span></div>
+              <div class="stat"><b>2</b><span>个面试</span></div>
+              <div class="stat"><b>1</b><span>个 offer</span></div>
+            </div>
+          </div>
+
+          <!-- 近期截止 -->
+          <div class="section-head">
+            <h3>近期截止</h3>
+            <button class="link" onclick="toast('演示原型：查看日历')">查看日历</button>
+          </div>
+          <div class="card ddl-list">
+            <button class="ddl-item urgent pressable" onclick="toast('距截止还剩 3 天，加油！')">
+              <span class="dot" style="background:var(--warning-500)"></span>
+              <span class="tt"><b>CMU MHCI PS 文书</b><span>卡内基梅隆大学 · 个人陈述</span></span>
+              <span class="dt">12月21日</span>
+              <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <button class="ddl-item pressable" onclick="toast('推荐信确认：等待李教授回复')">
+              <span class="dot" style="background:var(--brand-500)"></span>
+              <span class="tt"><b>USC 推荐信确认</b><span>南加州大学 · 推荐信</span></span>
+              <span class="dt">12月23日</span>
+              <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <button class="ddl-item pressable" onclick="toast('作品集上传：尚未开始')">
+              <span class="dot" style="background:var(--gray-400)"></span>
+              <span class="tt"><b>NYU 作品集上传</b><span>纽约大学 · 作品集</span></span>
+              <span class="dt">12月28日</span>
+              <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </section>
+
+        <!-- ============ 选校 ============ -->
+        <section class="page" id="page-schools">
+          <div class="page-title-row"><h1>选校</h1></div>
+          <div class="searchbar">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="schoolSearch" type="text" placeholder="搜索学校、专业或项目" oninput="renderSchools()">
+            <button class="filter-btn" onclick="toast('演示原型：高级筛选')" aria-label="筛选">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            </button>
+          </div>
+          <div class="chips" id="schoolChips">
+            <button class="chip active" data-cat="all" onclick="setSchoolCat(this)">全部</button>
+            <button class="chip" data-cat="reach" onclick="setSchoolCat(this)">冲刺</button>
+            <button class="chip" data-cat="match" onclick="setSchoolCat(this)">匹配</button>
+            <button class="chip" data-cat="safe" onclick="setSchoolCat(this)">保底</button>
+          </div>
+          <div id="schoolList"></div>
+        </section>
+
+        <!-- ============ 文书 ============ -->
+        <section class="page" id="page-essays">
+          <div class="page-title-row">
+            <h1>文书中心</h1>
+            <button class="btn btn-primary" style="height:36px;font:var(--text-caption-medium)" onclick="toast('演示原型：新建文书')">新建文书</button>
+          </div>
+          <div class="chips" id="essayChips">
+            <button class="chip active" data-st="all" onclick="setEssaySt(this)">全部</button>
+            <button class="chip" data-st="未开始" onclick="setEssaySt(this)">未开始</button>
+            <button class="chip" data-st="草稿中" onclick="setEssaySt(this)">草稿中</button>
+            <button class="chip" data-st="修改中" onclick="setEssaySt(this)">修改中</button>
+            <button class="chip" data-st="已定稿" onclick="setEssaySt(this)">已定稿</button>
+          </div>
+          <div id="essayList"></div>
+        </section>
+
+        <!-- ============ 进度 ============ -->
+        <section class="page" id="page-progress">
+          <div class="page-title-row"><h1>申请进度</h1></div>
+          <div class="card ov-card">
+            <div class="big" id="overallPct">68%</div>
+            <div class="lbl">申请总进度</div>
+            <div class="ring-wrap">
+              <svg width="160" height="160" viewBox="0 0 160 160">
+                <circle cx="80" cy="80" r="66" fill="none" stroke="var(--gray-200)" stroke-width="14"/>
+                <circle id="segDone" cx="80" cy="80" r="66" fill="none" stroke="var(--brand-500)" stroke-width="14" stroke-linecap="round"/>
+                <circle id="segDoing" cx="80" cy="80" r="66" fill="none" stroke="var(--info-500)" stroke-width="14" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="ring-legend">
+              <span><i style="background:var(--brand-500)"></i>已完成 45%</span>
+              <span><i style="background:var(--info-500)"></i>进行中 23%</span>
+              <span><i style="background:var(--gray-200)"></i>未开始 32%</span>
+            </div>
+            <div class="stat-row">
+              <div class="stat"><b>8</b><span>所院校</span></div>
+              <div class="stat"><b>3</b><span>篇文书</span></div>
+              <div class="stat"><b>2</b><span>个面试</span></div>
+              <div class="stat"><b>1</b><span>个 offer</span></div>
+            </div>
+          </div>
+
+          <div class="section-head"><h3>阶段时间轴</h3></div>
+          <div id="stageList"></div>
+        </section>
+
+        <!-- ============ 我的 ============ -->
+        <section class="page" id="page-profile">
+          <div class="page-title-row"><h1>我的</h1></div>
+
+          <button class="card hoverable pressable user-card" style="width:100%;text-align:left" onclick="toast('演示原型：编辑资料')">
+            <div class="avatar">
+              <div class="img">A</div>
+              <span class="edit"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>
+            </div>
+            <div class="user-info">
+              <h2>Alex Chen</h2>
+              <p>2026 Fall · 美国 · 人机交互</p>
+              <span class="tag tag-brand">申请冲刺中</span>
+            </div>
+            <svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+
+          <div class="card" style="margin-top:12px">
+            <div style="font:var(--text-h3)">申请概览</div>
+            <div class="ov4">
+              <div class="stat"><b>8</b><span>所院校</span></div>
+              <div class="stat"><b>3</b><span>篇文书</span></div>
+              <div class="stat"><b>2</b><span>个待办</span></div>
+              <div class="stat"><b>1</b><span>个 offer</span></div>
+            </div>
+          </div>
+
+          <div class="vip-card pressable" onclick="toast('演示原型：PathFinder Pro')">
+            <div class="crown"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2.5 7l4.5 4L12 4l5 7 4.5-4-1.8 12H4.3L2.5 7z"/></svg></div>
+            <div class="tx"><b>开通 PathFinder Pro</b><span>AI 文书润色 · 选校报告 · 无限提问</span></div>
+            <button class="go">查看详情</button>
+          </div>
+
+          <div class="group-title">我的申请</div>
+          <div class="card menu-list" id="menuApply"></div>
+
+          <div class="group-title">工具与服务</div>
+          <div class="card menu-list" id="menuTools"></div>
+
+          <div class="group-title">设置</div>
+          <div class="card menu-list" id="menuSettings"></div>
+
+          <button class="logout" onclick="toast('演示原型：退出登录')">退出登录</button>
+          <div class="version">PathFinder v2.4.0</div>
+        </section>
+
+        <!-- 悬浮操作（固定在可视底部，不随滚动） -->
+        <button class="fab" id="fabSchools" onclick="toast('演示原型：添加学校')" aria-label="添加学校">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <button class="ai-pill" id="aiPill" onclick="toast('AI 润色已加入队列')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3z"/></svg>
+          AI 润色
+        </button>
+      </div>
+
+      <!-- Tab Bar -->
+      <nav class="tabbar">
+        <button class="tab active" data-page="home" onclick="switchTab('home')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+          首页<span class="ind"></span>
+        </button>
+        <button class="tab" data-page="schools" onclick="switchTab('schools')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+          选校<span class="ind"></span>
+        </button>
+        <button class="tab" data-page="essays" onclick="switchTab('essays')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          文书<span class="ind"></span>
+        </button>
+        <button class="tab" data-page="progress" onclick="switchTab('progress')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          进度<span class="ind"></span>
+        </button>
+        <button class="tab" data-page="profile" onclick="switchTab('profile')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          我的<span class="ind"></span>
+        </button>
+      </nav>
+    </div>
+  </div>
+</div>
+<div class="caption">PathFinder · Interactive Prototype — Design Token / 组件规范 / 状态驱动 / 微交互</div>
+
+<script>
+/* ================= 数据 ================= */
+const schools = [
+  {name:"卡内基梅隆大学", en:"Carnegie Mellon University", abbr:"CMU", color:"#C41230", program:"MHCI 人机交互硕士", cat:"match", round:"RD", ddl:"12月21日", prob:65, status:"材料准备中", fav:true},
+  {name:"南加州大学", en:"University of Southern California", abbr:"USC", color:"#9D2235", program:"CS 计算机科学硕士", cat:"match", round:"RD", ddl:"12月23日", prob:72, status:"已提交", fav:false},
+  {name:"纽约大学", en:"New York University", abbr:"NYU", color:"#57068C", program:"IDM 交互媒体硕士", cat:"safe", round:"Rolling", ddl:"12月28日", prob:85, status:"未开始", fav:true},
+  {name:"斯坦福大学", en:"Stanford University", abbr:"S", color:"#8C1515", program:"MS&E 管理科学硕士", cat:"reach", round:"RD", ddl:"1月5日", prob:32, status:"材料准备中", fav:false},
+  {name:"华盛顿大学", en:"University of Washington", abbr:"UW", color:"#4B2E83", program:"HCDE 人本设计工程", cat:"safe", round:"RD", ddl:"1月15日", prob:78, status:"未开始", fav:false},
+  {name:"麻省理工学院", en:"MIT", abbr:"MIT", color:"#A31F34", program:"Media Lab 媒体实验室", cat:"reach", round:"RD", ddl:"1月8日", prob:18, status:"未开始", fav:false},
+];
+const essays = [
+  {type:"PS", title:"PS 个人陈述", school:"CMU · MHCI", ver:"v3", status:"修改中", ddl:"12月21日"},
+  {type:"CV", title:"CV 学术简历", school:"通用版本", ver:"v5", status:"已定稿", ddl:"—"},
+  {type:"RL", title:"RL 推荐信 · 李教授", school:"USC / NYU", ver:"v1", status:"草稿中", ddl:"12月23日"},
+  {type:"PF", title:"Portfolio 作品集", school:"NYU · IDM", ver:"v0", status:"未开始", ddl:"12月28日"},
+];
+const stages = [
+  {name:"探索期", desc:"确定申请方向与国家", state:"done", subs:[
+    {t:"国家与专业方向调研", d:"已完成", done:true},
+    {t:"初步院校名单（20 所）", d:"已完成", done:true}]},
+  {name:"准备期", desc:"语言考试 · 背景提升", state:"done", subs:[
+    {t:"托福出分 108", d:"已完成", done:true},
+    {t:"实习 / 科研经历补齐", d:"已完成", done:true}]},
+  {name:"冲刺期", desc:"文书打磨 · 材料定稿", state:"doing", cur:true, subs:[
+    {t:"PS 初稿完成", d:"建议 12月15日", done:true},
+    {t:"推荐信邀约发出", d:"建议 12月16日", done:true},
+    {t:"作品集整理排版", d:"建议 12月24日", done:false},
+    {t:"标化成绩官方送分", d:"建议 12月26日", done:false}]},
+  {name:"提交期", desc:"网申填写 · 材料上传", state:"todo", subs:[
+    {t:"网申表格填写", d:"建议 12月下旬"},
+    {t:"申请费缴纳与提交", d:"建议 12月下旬"}]},
+  {name:"录取期", desc:"跟进结果 · 面试准备", state:"todo", subs:[
+    {t:"面试模拟练习", d:"次年 1–3 月"},
+    {t:"Offer 对比与决策", d:"次年 3–4 月"}]},
+  {name:"行前期", desc:"签证 · 住宿 · 行前准备", state:"todo", subs:[
+    {t:"签证材料与面签", d:"次年 5–6 月"},
+    {t:"住宿与机票预订", d:"次年 7 月"}]},
+];
+const menus = {
+  menuApply:[
+    {n:"我的院校", bg:"var(--brand-50)", c:"var(--brand-600)", icon:'<circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.4 8 12 8 12s8-6.6 8-12a8 8 0 0 0-8-8z"/>'},
+    {n:"文书材料", bg:"var(--success-50)", c:"#16A34A", icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>'},
+    {n:"申请日历", bg:"var(--warning-50)", c:"#D97706", icon:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'},
+    {n:"录取结果", bg:"var(--info-50)", c:"#0891B2", icon:'<circle cx="12" cy="8" r="6"/><path d="M15.5 13 17 22l-5-3-5 3 1.5-9"/>'},
+  ],
+  menuTools:[
+    {n:"AI 留学助手", bg:"var(--brand-50)", c:"var(--brand-600)", icon:'<path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3z"/>'},
+    {n:"选校报告", bg:"var(--success-50)", c:"#16A34A", icon:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>'},
+    {n:"资料库", bg:"var(--warning-50)", c:"#D97706", icon:'<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>'},
+    {n:"消息中心", bg:"var(--info-50)", c:"#0891B2", dot:true, icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'},
+  ],
+  menuSettings:[
+    {n:"账号与安全", bg:"var(--gray-100)", c:"var(--gray-600)", icon:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>'},
+    {n:"通知设置", bg:"var(--gray-100)", c:"var(--gray-600)", icon:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>'},
+    {n:"隐私设置", bg:"var(--gray-100)", c:"var(--gray-600)", icon:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>'},
+    {n:"帮助与反馈", bg:"var(--gray-100)", c:"var(--gray-600)", icon:'<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>'},
+    {n:"关于我们", bg:"var(--gray-100)", c:"var(--gray-600)", icon:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>'},
+  ],
+};
+
+/* ================= 工具 ================= */
+const $ = s => document.querySelector(s);
+const svgWrap = (inner,size=20)=>`<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+const chev = svgWrap('<polyline points="9 18 15 12 9 6"/>',18);
+let toastTimer;
+function toast(msg){
+  $("#toastText").textContent = msg;
+  const t = $("#toast");
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove("show"), 1800);
+}
+
+/* ================= Tab 切换 ================= */
+function switchTab(name){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active", t.dataset.page===name));
+  document.querySelectorAll(".page").forEach(p=>{
+    const on = p.id === "page-"+name;
+    p.classList.toggle("active", on);
+    p.classList.remove("enter");
+    if(on){ void p.offsetWidth; p.classList.add("enter"); p.scrollTop = 0; }
+  });
+  $("#fabSchools").classList.toggle("show", name==="schools");
+  $("#aiPill").classList.toggle("show", name==="essays");
+  if(name==="progress") animateRing();
+  if(name==="home") animateBars("#page-home");
+}
+
+/* ================= 选校页 ================= */
+let schoolCat = "all";
+function setSchoolCat(btn){
+  schoolCat = btn.dataset.cat;
+  document.querySelectorAll("#schoolChips .chip").forEach(c=>c.classList.toggle("active", c===btn));
+  renderSchools();
+}
+function probColor(p){ return p>=70 ? "var(--success-500)" : p>=40 ? "var(--brand-500)" : "var(--warning-500)"; }
+function statusTag(s){ return s==="已提交" ? "tag-success" : s==="材料准备中" ? "tag-warning" : "tag-gray"; }
+function renderSchools(){
+  const q = ($("#schoolSearch").value || "").trim().toLowerCase();
+  const list = schools.filter(s =>
+    (schoolCat==="all" || s.cat===schoolCat) &&
+    (!q || s.name.toLowerCase().includes(q) || s.en.toLowerCase().includes(q) || s.program.toLowerCase().includes(q))
+  );
+  const box = $("#schoolList");
+  if(!list.length){
+    box.innerHTML = `<div class="card empty">
+      <div class="illo">${svgWrap('<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/>',44)}</div>
+      <h3>没有找到相关学校</h3><p>换个关键词试试，或清空搜索与筛选</p>
+      <button class="btn btn-primary" onclick="clearSchoolFilter()">清空搜索条件</button></div>`;
+    return;
+  }
+  box.innerHTML = list.map(s=>{
+    const i = schools.indexOf(s);
+    const C = 2*Math.PI*18, pct = s.prob/100, col = probColor(s.prob);
+    return `<div class="card hoverable school-card">
+      <div class="school-top">
+        <div class="school-logo" style="background:${s.color}">${s.abbr}</div>
+        <div class="nm"><b>${s.name}</b><span>${s.en}</span></div>
+        <button class="star ${s.fav?'on':''}" onclick="toggleFav(${i},this)" aria-label="收藏">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="${s.fav?'currentColor':'none'}" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </button>
+      </div>
+      <div class="school-mid">
+        <span class="pg">${s.program}</span>
+        <span class="tag tag-brand">${s.round}</span>
+        <span class="dd">DDL ${s.ddl}</span>
+      </div>
+      <div class="school-bot">
+        <div class="probring">
+          <svg width="44" height="44" viewBox="0 0 44 44">
+            <circle cx="22" cy="22" r="18" fill="none" stroke="var(--gray-100)" stroke-width="5"/>
+            <circle cx="22" cy="22" r="18" fill="none" stroke="${col}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${(C*pct).toFixed(1)} ${C.toFixed(1)}"/>
+          </svg>
+          <i style="color:${col}">${s.prob}</i>
+        </div>
+        <span class="ptxt">录取概率 ${s.prob}%</span>
+        <span class="tag ${statusTag(s.status)}">${s.status}</span>
+      </div>
+    </div>`;
+  }).join("");
+}
+function clearSchoolFilter(){
+  $("#schoolSearch").value = "";
+  schoolCat = "all";
+  document.querySelectorAll("#schoolChips .chip").forEach(c=>c.classList.toggle("active", c.dataset.cat==="all"));
+  renderSchools();
+}
+function toggleFav(i, el){
+  schools[i].fav = !schools[i].fav;
+  el.classList.toggle("on", schools[i].fav);
+  el.querySelector("svg").setAttribute("fill", schools[i].fav ? "currentColor" : "none");
+  el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop");
+  toast(schools[i].fav ? `已收藏 ${schools[i].name}` : `已取消收藏 ${schools[i].name}`);
+}
+
+/* ================= 文书页 ================= */
+let essaySt = "all";
+const essayStyle = {
+  PS:{bg:"var(--brand-50)", c:"var(--brand-600)", icon:'<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>'},
+  CV:{bg:"var(--success-50)", c:"#16A34A", icon:'<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="13" y2="15"/>'},
+  RL:{bg:"var(--warning-50)", c:"#D97706", icon:'<path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><polyline points="22,6 12,13 2,6"/>'},
+  PF:{bg:"var(--info-50)", c:"#0891B2", icon:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>'},
+};
+const essayTag = {"未开始":"tag-gray","草稿中":"tag-info","修改中":"tag-warning","已定稿":"tag-success"};
+function setEssaySt(btn){
+  essaySt = btn.dataset.st;
+  document.querySelectorAll("#essayChips .chip").forEach(c=>c.classList.toggle("active", c===btn));
+  renderEssays();
+}
+function renderEssays(){
+  const list = essays.filter(e => essaySt==="all" || e.status===essaySt);
+  const box = $("#essayList");
+  if(!list.length){
+    box.innerHTML = `<div class="card empty">
+      <div class="illo">${svgWrap('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',44)}</div>
+      <h3>还没有该状态的文书</h3><p>从 PS、CV 到推荐信，我们帮你一站管理</p>
+      <button class="btn btn-primary" onclick="toast('演示原型：新建文书')">创建第一篇文书</button></div>`;
+    return;
+  }
+  box.innerHTML = list.map(e=>{
+    const st = essayStyle[e.type];
+    return `<button class="card hoverable pressable essay-card" onclick="toast('打开「${e.title}」详情')">
+      <div class="essay-icon" style="background:${st.bg};color:${st.c}">${svgWrap(st.icon)}</div>
+      <div class="essay-mid">
+        <b>${e.title}<span class="ver">${e.ver}</span></b>
+        <span>${e.school}</span>
+      </div>
+      <div class="essay-right">
+        <span class="tag ${essayTag[e.status]}">${e.status}</span>
+        <span class="dd">${e.ddl==="—" ? "无截止" : "DDL " + e.ddl}</span>
+      </div>
+    </button>`;
+  }).join("");
+}
+
+/* ================= 进度页 ================= */
+function renderStages(){
+  $("#stageList").innerHTML = stages.map((s,i)=>{
+    const done = s.subs.filter(x=>x.done).length, total = s.subs.length;
+    const pct = Math.round(done/total*100);
+    const node = s.state==="done"
+      ? `<div class="stage-node done">${svgWrap('<polyline points="20 6 9 17 4 12"/>',14)}</div>`
+      : s.state==="doing"
+        ? `<div class="stage-node doing">${svgWrap('<circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/>',14)}</div>`
+        : `<div class="stage-node todo"></div>`;
+    return `<div class="card stage-card ${s.cur?'current open':''}" data-i="${i}">
+      <button class="stage-head pressable" onclick="toggleStage(${i})">
+        ${node}
+        <div class="stage-info">
+          <div class="r1"><b>${s.name}</b>${s.cur?'<span class="tag tag-brand">当前阶段</span>':''}</div>
+          <div class="desc">${s.desc}</div>
+          <div class="bar"><i data-w="${pct}%" style="width:${s.cur?pct+'%':'0'}"></i></div>
+        </div>
+        <div class="stage-meta">
+          <span class="pc">${done}/${total}</span>
+          <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </button>
+      <div class="subtasks"><div class="sub-inner">
+        ${s.subs.map((sub,j)=>`
+          <button class="sub-item ${sub.done?'done':''}" onclick="toggleSub(${i},${j})">
+            <span class="checkbox">${svgWrap('<polyline points="20 6 9 17 4 12"/>',12)}</span>
+            <span class="sn">${sub.t}</span>
+            <span class="st">${sub.d}</span>
+          </button>`).join("")}
+      </div></div>
+    </div>`;
+  }).join("");
+}
+function toggleStage(i){
+  const el = document.querySelector(`.stage-card[data-i="${i}"]`);
+  el.classList.toggle("open");
+  const bar = el.querySelector(".bar>i");
+  if(el.classList.contains("open")) requestAnimationFrame(()=>{ bar.style.width = bar.dataset.w; });
+}
+let overall = 68;
+function setOverall(v){
+  overall = Math.max(0, Math.min(100, v));
+  $("#overallPct").textContent = overall + "%";
+  $("#homePct").textContent = overall + "%";
+  const hb = $("#homeBar");
+  hb.dataset.w = overall + "%";
+  if($("#page-home").classList.contains("active")) hb.style.width = hb.dataset.w;
+}
+function toggleSub(i,j){
+  const sub = stages[i].subs[j];
+  sub.done = !sub.done;
+  setOverall(overall + (sub.done ? 1 : -1));
+  const card = document.querySelector(`.stage-card[data-i="${i}"]`);
+  const item = card.querySelectorAll(".sub-item")[j];
+  item.classList.toggle("done", sub.done);
+  const done = stages[i].subs.filter(x=>x.done).length, total = stages[i].subs.length;
+  card.querySelector(".stage-meta .pc").textContent = `${done}/${total}`;
+  const bar = card.querySelector(".bar>i");
+  bar.dataset.w = Math.round(done/total*100)+"%";
+  bar.style.width = bar.dataset.w;
+  toast(sub.done ? `已完成「${sub.t}」` : `已取消「${sub.t}」`);
+}
+function animateRing(){
+  const C = 2*Math.PI*66;
+  const done = $("#segDone"), doing = $("#segDoing");
+  const dP = .45, gP = .23;
+  done.style.transition = doing.style.transition = "none";
+  done.setAttribute("stroke-dasharray", `0 ${C}`);
+  doing.setAttribute("stroke-dasharray", `0 ${C}`);
+  doing.setAttribute("stroke-dashoffset", -(C*dP));
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    done.style.transition = doing.style.transition = "stroke-dasharray .8s ease-in-out";
+    done.setAttribute("stroke-dasharray", `${C*dP} ${C}`);
+    doing.setAttribute("stroke-dasharray", `${C*gP} ${C}`);
+  }));
+}
+function animateBars(scope){
+  document.querySelectorAll(scope+" .bar>i").forEach(b=>{
+    b.style.transition="none"; b.style.width="0";
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{ b.style.transition=""; b.style.width=b.dataset.w; }));
+  });
+}
+
+/* ================= 我的页 ================= */
+function renderMenus(){
+  for(const [id, items] of Object.entries(menus)){
+    document.getElementById(id).innerHTML = items.map(m=>`
+      <button class="menu-item pressable" onclick="toast('打开「${m.n}」')">
+        <span class="mi" style="background:${m.bg};color:${m.c}">${svgWrap(m.icon)}</span>
+        <span class="mt">${m.n}</span>
+        ${m.dot?'<span class="unread-dot"></span>':''}
+        ${chev.replace('class="','class="chev ')}
+      </button>`).join("");
+  }
+}
+
+/* ================= 初始化 ================= */
+renderSchools();
+renderEssays();
+renderStages();
+renderMenus();
+animateRing();
+setTimeout(()=>animateBars("#page-home"), 250);
+</script>
+</body>
+</html>
